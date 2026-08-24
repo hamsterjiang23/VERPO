@@ -1,0 +1,11 @@
+schema_version: 1
+kind: teacher
+id: frozen
+config:
+  identity:
+    teacher: frozen
+  teacher:
+    mode: fixed_initial
+    strategy: fixed_initial
+    reference_mode: fixed_initial
+    use_ema: false

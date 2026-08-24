@@ -1,0 +1,15 @@
+schema_version: 1
+kind: matrix
+id: qwen3_8b_section3_ours_three_arm
+protocols:
+  - sdpo_section3_biology
+  - sdpo_section3_chemistry
+  - sdpo_section3_material
+  - sdpo_section3_physics
+  - sdpo_section3_tooluse
+teachers:
+  - ema_095
+arms:
+  - fec_fkl
+  - fec_advmod_fkl
+  - fec_advmod_fkl_combined

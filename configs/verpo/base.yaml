@@ -1,0 +1,118 @@
+schema_version: 2
+kind: base
+id: verpo_zpd_v2
+config:
+  identity:
+    status: formal
+    model: null
+    finetuning: null
+    hardware: null
+    protocol: null
+    teacher: null
+    arm: null
+  execution:
+    engine: sdpo_section3
+    config_source: verpo_semantic_yaml_v2
+  model:
+    hf_id: null
+    revision: main
+    trust_remote_code: false
+    prompt_template_version: math_text_v1
+    chat_template_thinking_control: enable_thinking
+  finetuning:
+    mode: full
+    lora_rank: 0
+    lora_alpha: 128
+    target_modules: all-linear
+  hardware:
+    engine_id: null
+    gpu_count: 1
+    gpu_name_substring: null
+    gpu_memory_mib_min: 0
+    gpu_memory_mib_max: 999999
+    rollout_backend: vllm
+    actor_micro_batch_per_gpu: 1
+    vllm_gpu_memory_utilization: 0.6
+    rollout_enforce_eager: false
+    free_cache_engine: true
+    tensor_model_parallel_size: 1
+  protocol:
+    dataset_id: math_text
+    train_file: data/train.jsonl
+    validation_file: data/validation.jsonl
+    train_max_samples: 0
+    global_prompt_batch: 1
+    validation_batch: 1
+    rollout_n: 8
+    mini_batch_trajectories: 8
+    max_prompt_length: 2048
+    max_response_length: 4096
+    validation_response_length: 4096
+    teacher_max_token_len_per_gpu: 4096
+    max_model_len: 8192
+    validation_n: 1
+    rollout_temperature: 1.0
+    rollout_top_p: 1.0
+    rollout_top_k: -1
+    validation_temperature: 0.6
+    validation_top_p: 0.95
+    validation_top_k: -1
+    total_epochs: 1
+    total_training_steps: 1
+    save_frequency: 1
+    validation_frequency: 1
+    logging_frequency: 1
+    validation_before_training: false
+    learning_rate: 1.0e-6
+    weight_decay: 0.01
+    warmup_steps: 0
+    scheduler: constant
+    grad_clip: 1.0
+    ppo_epochs: 1
+    swanlab_project: verpo-zpd
+  method:
+    objective: verpo
+    actor_loss_mode: verpo_zpd
+    divergence: forward_kl
+    displacement: fec
+    lambda_ref: 0.1
+    lambda_evi: 0.5
+    advantage_modulation: none
+    advantage_modulation_lambda: 0.0
+    temperature: 1.0
+    vocab_mode: topk_truncated
+    top_k: 128
+    vocab_chunk_size: 4096
+    cost_alpha: 0.0025
+    cost_epsilon: 2.5e-5
+  teacher:
+    mode: fixed_initial
+    strategy: fixed_initial
+    reference_mode: fixed_initial
+    sync_interval: 10
+    ema_decay: 0.95
+  zpd:
+    group_enabled: false
+    group_epsilon: 0.0
+    group_mode: reward_ranked
+    sibling_selection: correctness
+    evidence_scope: all
+    contrastive_num_negative_hints: 1
+    projection_epsilon: 1.0e-8
+    allow_negative_benefit: false
+  reward:
+    correct_reward: 1.0
+    valid_wrong_reward: 0.0
+    format_invalid_reward: -1.0
+    length_aware_enabled: true
+    overlong_buffer_len: 512
+    overlong_penalty_factor: 1.0
+    pad_generation_to_max_new_tokens: false
+  audit:
+    gradient_enabled: false
+    gradient_max_steps: 0
+    gradient_max_parameter_elements: 1000000
+    gradient_max_parameter_tensors: 16
+  runtime:
+    completion_protocol: math_text
+    save_training_rollouts: true

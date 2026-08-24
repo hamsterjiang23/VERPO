@@ -1,0 +1,266 @@
+method: verpo_zpd_t4k_dapo_reward_ranked
+protocol_id: t4k_dapo_reward_ranked_v2
+adv_estimator: grpo
+actor_loss_mode: verpo_zpd
+rlcsd_commit: 3da75d2209317d7f8fc7a89f3f65b8ad5cc4e4c0
+dataset_repo: Leyiii/RLCSD
+dataset_revision: 33d7de919af5b03257ff92c30303fddf9afdda4a
+model_repo: Qwen/Qwen3-1.7B
+model_revision: 70d244cc86ccca08cf5af4e1e306ecf908b1ad5e
+
+train_file: deepmath_filtered_level5_7/train.parquet
+validation_file: amc23+aime24+aime25/val.parquet
+max_train_samples: 60000
+shuffle: true
+seed: 42
+data_seed: 42
+full_determinism: false
+student_enable_thinking: true
+teacher_enable_thinking: true
+validation_enable_thinking: true
+prompt_template_version: qwen3_thinking_boxed_v1
+actor_prompt_suffix: 'Present your final answer inside \boxed{}, for example \boxed{42}.'
+
+global_prompt_batch_size: 128
+per_device_prompt_batch_size: 16
+group_size: 16
+ppo_mini_batch_size: 16
+num_epochs: 30
+learning_rate: 1.0e-6
+weight_decay: 0.01
+warmup_steps: 10
+lr_scheduler_type: constant
+max_grad_norm: 1.0
+
+max_prompt_length: 2048
+max_completion_length: 4096
+validation_max_completion_length: 4096
+actor_max_token_len_per_gpu: 6144
+reward_manager: dapo
+overlong_buffer_len: 512
+overlong_penalty_factor: 1.0
+rollout_temperature: 1.0
+rollout_top_p: 1.0
+rollout_top_k: -1
+dynamic_group_filter:
+  enabled: true
+  metric: seq_final_reward
+  min_reward_range: 1.0e-6
+  max_num_gen_batches: 4
+validation_n: 12
+validation_datasets:
+  amc23: {prompts: 83, generations_per_validation: 996}
+  aime24: {prompts: 30, generations_per_validation: 360}
+  aime25: {prompts: 30, generations_per_validation: 360}
+validation_total_prompts: 143
+validation_total_generations: 1716
+validation_artifacts:
+  combined: "validation/{step}.jsonl"
+  per_dataset: "validation/by_dataset/{amc23|aime24|aime25}/{step}.jsonl"
+  metrics: "validation/by_dataset/{step}.metrics.json"
+validation_temperature: 0.6
+validation_top_p: 0.95
+validation_top_k: 20
+validation_batch_size: 16
+rollout_is_threshold: 2.0
+vllm_gpu_memory_utilization: 0.6
+vllm_tensor_parallel_size: 1
+
+save_steps: 50
+evaluation_steps: 50
+logging_steps: 5
+validation_before_training: true
+save_total_limit: 0
+
+verpo:
+  teacher_mode: fixed_initial
+  teacher_sync_interval: 10
+  teacher_ema_decay: 0.95
+  evidence_rollout_scope: all
+  group_zpd_enabled: false
+  group_zpd_mode: reward_ranked
+  sibling_selection_mode: reward_ranked
+  contrastive_num_negative_hints: 1
+  lambda_ref: 0.1
+  lambda_evi: 0.5
+  tau: 1.0
+  rho: 0.0001
+  cost_floor: 0.001
+  cost_beta: 1.0
+  temperature: 1.0
+  vocab_chunk_size: 4096
+  vocab_mode: topk_truncated
+  top_k: 128
+  teacher_max_token_len_per_gpu: 20000
+
+registered_arms:
+  pure_grpo:
+    objective: pure_grpo
+    lambda_ref: 0.0
+    lambda_evi: 0.0
+  fkl_fixed:
+    divergence: forward_kl
+    displacement_mode: evidence_vs_none
+  fkl_ctr:
+    divergence: forward_kl
+    displacement_mode: correct_vs_incorrect
+  rkl_ranked:
+    divergence: reverse_kl
+    displacement_mode: reward_ranked
+  fkl_ranked:
+    divergence: forward_kl
+    displacement_mode: reward_ranked
+  fkl_fec:
+    divergence: forward_kl
+    displacement_mode: fec
+  rkl_fec:
+    divergence: reverse_kl
+    displacement_mode: fec
+    lambda_ref: 1.0
+    lambda_evi: 4.0
+
+a800_2x_80gb:
+  gpu_count: 2
+  gpu_memory_mib_min: 80000
+  gpu_memory_mib_max: 83000
+  global_prompt_batch_size: 32
+  per_device_prompt_batch_size: 16
+  group_size: 8
+  num_epochs: 1
+  max_training_steps: 400
+  ppo_micro_batch_size_per_gpu: 2
+  vllm_gpu_memory_utilization: 0.6
+  save_steps: 100
+  evaluation_steps: 50
+  swanlab_project: qwen3-1.7b-a800-t4k-dapo-five-arm
+  checkpoint_retention: modelscope_all_local_top1
+  local_keep_best: 1
+  keep_current_after_upload: false
+  peak_full_checkpoints: 2
+  modelscope_upload:
+    transport: http_sdk
+    scheduling: durable_single_worker_async
+    queue_workers: 1
+    terminal_drain: true
+    owner_env: MODELSCOPE_OWNER
+    repo_id_template: "{owner}/{experiment_id}"
+    auto_create_private_repo: true
+    token_env: MODELSCOPE_TOKEN
+    revision_env: MODELSCOPE_REVISION
+    path_prefix_env: MODELSCOPE_PATH_PREFIX
+    default_path_prefix: qwen3-1.7b-a800-t4k-dapo-five-arm
+    upload_every_saved_checkpoint: true
+    upload_sha256_manifest: true
+    prune_only_after_success: true
+    preserve_pending_and_failed_checkpoints: true
+    allow_temporary_local_backlog_growth: true
+    failure_policy: fail_closed_preserve_local_checkpoint
+  matrix:
+    a800_pure_grpo_t4k_dapo: {objective: pure_grpo, lambda_ref: 0.0, lambda_evi: 0.0}
+    a800_fkl_fixed_t4k_dapo_lr05_le10_all: {objective: verpo_zpd, divergence: forward_kl, displacement_mode: evidence_vs_none, group_zpd_mode: reward_ranked, sibling_selection_mode: correctness, evidence_rollout_scope: all, lambda_ref: 0.5, lambda_evi: 1.0}
+    a800_fkl_ctr_t4k_dapo_lr05_le10_all: {objective: verpo_zpd, divergence: forward_kl, displacement_mode: correct_vs_incorrect, group_zpd_mode: reward_ranked, sibling_selection_mode: correctness, evidence_rollout_scope: all, lambda_ref: 0.5, lambda_evi: 1.0}
+    a800_fkl_fec_t4k_dapo_lr05_le10_all: {objective: verpo_zpd, divergence: forward_kl, displacement_mode: fec, group_zpd_mode: reward_ranked, sibling_selection_mode: correctness, evidence_rollout_scope: all, lambda_ref: 0.5, lambda_evi: 1.0}
+    a800_rkl_fec_t4k_dapo_lr05_le10_all: {objective: verpo_zpd, divergence: reverse_kl, displacement_mode: fec, group_zpd_mode: reward_ranked, sibling_selection_mode: correctness, evidence_rollout_scope: all, lambda_ref: 0.5, lambda_evi: 1.0, implementation_fingerprint: rkl_logdensity_tangent_fec_v1}
+
+a100_4x_40gb_checkpoint_retention:
+  selection_metric: rlcsd_macro_mean_at_12_accuracy
+  keep_best: 2
+  peak_full_checkpoints: 3
+
+a100_4x_40gb:
+  gpu_count: 4
+  gpu_memory_mib_min: 40000
+  gpu_memory_mib_max: 42000
+  global_prompt_batch_size: 64
+  per_device_prompt_batch_size: 16
+  group_size: 16
+  ppo_micro_batch_size_per_gpu: 2
+  vllm_gpu_memory_utilization: 0.55
+  save_steps: 50
+  evaluation_steps: 50
+
+goal28_checkpoint_retention:
+  save_total_limit: 0
+  keep_best: 0
+  capacity_gate: keep_all
+
+registered_a100_4x_40gb_validation:
+  a_ranked:
+    divergence: forward_kl
+    displacement_mode: reward_ranked
+    lambda_ref: 0.1
+    lambda_evi: 0.5
+    tau: 1.0
+    cost_floor: 0.01
+    cost_beta: 1.0
+    contrastive_num_negative_hints: 1
+    projection_epsilon: 1.0e-8
+  a_fec:
+    divergence: forward_kl
+    displacement_mode: fec
+    lambda_ref: 0.1
+    lambda_evi: 0.5
+    tau: 1.0
+    cost_floor: 0.01
+    cost_beta: 1.0
+    contrastive_num_negative_hints: 1
+    projection_epsilon: 1.0e-8
+  a_fec_lr1_le4:
+    divergence: forward_kl
+    displacement_mode: fec
+    lambda_ref: 1.0
+    lambda_evi: 4.0
+    tau: 1.0
+    cost_floor: 0.01
+    cost_beta: 1.0
+    contrastive_num_negative_hints: 1
+    projection_epsilon: 1.0e-8
+  a_rkl_fec_lr1_le4:
+    divergence: reverse_kl
+    displacement_mode: fec
+    evidence_rollout_scope: all
+    lambda_ref: 1.0
+    lambda_evi: 4.0
+    tau: 1.0
+    cost_floor: 0.01
+    cost_beta: 1.0
+    contrastive_num_negative_hints: 1
+    projection_epsilon: 1.0e-8
+  a_rkl_fec_lr1_le1_wrong_only:
+    divergence: reverse_kl
+    displacement_mode: fec
+    evidence_rollout_scope: wrong_only
+    lambda_ref: 1.0
+    lambda_evi: 1.0
+    tau: 1.0
+    cost_floor: 0.01
+    cost_beta: 1.0
+    contrastive_num_negative_hints: 4
+    projection_epsilon: 1.0e-8
+    checkpoint_retention: keep_all
+  a_rkl_fec_lr1_le4_wrong_only:
+    divergence: reverse_kl
+    displacement_mode: fec
+    evidence_rollout_scope: wrong_only
+    lambda_ref: 1.0
+    lambda_evi: 4.0
+    tau: 1.0
+    cost_floor: 0.01
+    cost_beta: 1.0
+    contrastive_num_negative_hints: 4
+    projection_epsilon: 1.0e-8
+    checkpoint_retention: keep_all
+
+legacy_reference_kl:
+  actor_use_kl_loss: false
+  actor_kl_loss_coef: 0.0
+  use_kl_in_reward: false
+  reward_kl_coef: 0.0
+
+external_baseline:
+  provenance: RLCSD paper Table 1, Qwen3-1.7B GRPO mean@12
+  comparison_scope: protocol-changed thinking 4K DAPO candidate vs published RLCSD; not paired, protocol-aligned, or causal
+  amc23: 76.6
+  aime24: 51.6
+  aime25: 37.2
+  average: 55.1

@@ -1,0 +1,12 @@
+schema_version: 1
+kind: teacher
+id: ema_095
+config:
+  identity:
+    teacher: ema_095
+  teacher:
+    mode: ema
+    strategy: ema
+    reference_mode: moving_teacher
+    use_ema: true
+    ema_decay: 0.95

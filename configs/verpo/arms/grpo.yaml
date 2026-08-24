@@ -1,0 +1,18 @@
+schema_version: 1
+kind: arm
+id: grpo
+config:
+  identity:
+    arm: grpo
+  model:
+    prompt_template_version: srpo_v1
+  protocol:
+    learning_rate: 5.0e-6
+    swanlab_project: qwen3-sdpo-section3-paper-baselines
+  method:
+    objective: pure_grpo
+    actor_loss_mode: ppo
+    divergence: forward_kl
+    displacement: evidence_vs_none
+    lambda_ref: 0.0
+    lambda_evi: 0.0

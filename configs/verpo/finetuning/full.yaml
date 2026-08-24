@@ -1,0 +1,11 @@
+schema_version: 1
+kind: finetuning
+id: full
+config:
+  identity:
+    finetuning: full
+  finetuning:
+    mode: full
+    lora_rank: 0
+    lora_alpha: 128
+    target_modules: all-linear

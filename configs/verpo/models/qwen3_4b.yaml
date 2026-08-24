@@ -1,0 +1,11 @@
+schema_version: 1
+kind: model
+id: qwen3_4b
+config:
+  identity:
+    model: qwen3_4b
+  model:
+    hf_id: Qwen/Qwen3-4B
+    revision: 1cfa9a7208912126459214e8b04321603b3df60c
+    chat_template_thinking_control: enable_thinking
+    prompt_template_version: qwen3_no_thinking_boxed_v1

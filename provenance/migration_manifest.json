@@ -1,0 +1,681 @@
+{
+  "schema_version": 1,
+  "target_repository": "VERPO-ZPD",
+  "source_repository_snapshot": "82c1df4",
+  "vendored_verl_baseline": "e7e052ab",
+  "pgr_assets": "removed",
+  "entries": [
+    {
+      "path": "risk_aware_opsd/__init__.py",
+      "sha256": "cf752ea1f49cf80b47e5011c58efcd862e406650863e8cc79705d5a657764889",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "rewritten"
+    },
+    {
+      "path": "risk_aware_opsd/__pycache__/__init__.cpython-314.pyc",
+      "sha256": "06d9c034f0a98a68d36d99521c41618e73ddbd455bd520610994d92ed6381cc9",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "risk_aware_opsd/__pycache__/ema_teacher.cpython-314.pyc",
+      "sha256": "ef81316e4a0f13d7279312bd389c260a83883ee1570aad581ba8cfa76f366c65",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "risk_aware_opsd/__pycache__/length_aware_reward.cpython-314.pyc",
+      "sha256": "bbfcebce6af954202f0c062804e4addb1f71885ae588a7b0d6acdee98f679f83",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "risk_aware_opsd/__pycache__/math_text_protocol.cpython-314.pyc",
+      "sha256": "db60dd471da076088eed9986820c298e197988889fc9d9058b3ce51c1b0a1384",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "risk_aware_opsd/__pycache__/sdpo_verl_reward.cpython-314.pyc",
+      "sha256": "f35fe9ea3b2682eaaaa744b0b7d720ef55e65e6d226e50ee75f2ecf1907d5dd7",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "risk_aware_opsd/__pycache__/train_trl_verpo.cpython-314.pyc",
+      "sha256": "1fa125ab7fbc82e3c9ffc992e56d4d81437ad50a22eca46535f6f8dc776e9d53",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "risk_aware_opsd/__pycache__/verpo_launch_config.cpython-314.pyc",
+      "sha256": "3eab2a61fbb95321c62c5d8ae0cecbd0361894b77705af45215a1698c6f46f55",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "risk_aware_opsd/__pycache__/verpo_topk.cpython-314.pyc",
+      "sha256": "1948a284ac9afaa3e77c25fb3c61bd51d87120783a780a8b7b80e667a5c5e949",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "risk_aware_opsd/__pycache__/verpo_trainer.cpython-314.pyc",
+      "sha256": "dbe9b938c6da5e9aeb470b5782ad68fa7f7eb78d452c73f59d4caf21f96a6b58",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "risk_aware_opsd/__pycache__/verpo_zpd.cpython-314.pyc",
+      "sha256": "c3949c3b34210e781fbd52a3a8ad4a50ecd00ccba9906bf2b8631c6e6981698c",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "risk_aware_opsd/__pycache__/zpd_dataset.cpython-314.pyc",
+      "sha256": "40d35165dfe6d04df791c828be97f021a1b941eab0e9bde3a0c257925cc0c588",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "risk_aware_opsd/ema_teacher.py",
+      "sha256": "212529612d2e6d70041d638ae383773067caf0b4eb33098972949b88da43f6f5",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "risk_aware_opsd/length_aware_reward.py",
+      "sha256": "f7a42cf5a68a0e063a06af332bfb52f2c66310a7608c27140235e317ffdbd7c6",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "risk_aware_opsd/math_text_protocol.py",
+      "sha256": "18910d8153a3e9f9378a1fd0e0c12029eb93954ce6c9733369cd3babe745c39c",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "risk_aware_opsd/sdpo_verl_reward.py",
+      "sha256": "0b3f21d146998baf64ad79cb35de41674541ba52b06e97490bf4a224f66cd14e",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "risk_aware_opsd/train_trl_verpo.py",
+      "sha256": "d8d3b5b85820ea89bfbfa434c072d9853e058b29a2615c24be6475a0fd9ff6b7",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "risk_aware_opsd/trainer.py",
+      "sha256": "2c19693b6902a5cd864d6335c3da3f34c9310bbf9d1309ef9ae26c1b494120e0",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "risk_aware_opsd/verpo_launch_config.py",
+      "sha256": "670f92a221cf108d7a453d5b6016e02bfc4738de24db90a8c393960896d63962",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "rewritten"
+    },
+    {
+      "path": "risk_aware_opsd/verpo_topk.py",
+      "sha256": "3e975d43db7560c09552b665e62a6b1d690958132f6d939efa69b917aad588ac",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "risk_aware_opsd/verpo_trainer.py",
+      "sha256": "8463ca23cabc755d14b4c08f5c91dbce383f1b8876b8e1c589d55a3a7348841d",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "risk_aware_opsd/verpo_zpd.py",
+      "sha256": "fc2dab3461fcb207eca6ffaabd670e91ba35d92fd08ec4810752e7b3b2cb947f",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "risk_aware_opsd/zpd_dataset.py",
+      "sha256": "81cbcc27d6d89fc4e1039cc12732f61b57ed4b7bd5cf0827aa747bc730a4123a",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "pipeline/trl/run.sh",
+      "sha256": "b6df71222e411d9271d656e518bb417ae2237b1dd73414a5bfa1c77e5a555877",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "pipeline/verl_math/bootstrap_sdpo_host.sh",
+      "sha256": "34bc00cb70a1380d1e3032506d8f306aa0d4aaf847deb4808d4f4a7f835af9e6",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "pipeline/verl_math/engines/sdpo_section3.sh",
+      "sha256": "702e18a8d497bc28d40105a6d9b30a462f4e24a54f3c6e978ff2a4505e9c84a5",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "pipeline/verl_math/engines/setup_env.sh",
+      "sha256": "ff530e5ac48fd7976a9bc1fae8b5643c2c804888c510fbcc82070d5227b8e054",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "pipeline/verl_math/README.md",
+      "sha256": "70d00ba65e8c9be4ca7c498f1abf5e476840a98db2632c1fdc68d4ea11d8db98",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "pipeline/verl_math/requirements-sglang.txt",
+      "sha256": "f2a1d50bf1cb868f81fe25b816ddec0ebf1b4aa8e0541b5c72bf8dd7c91c4053",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "pipeline/verl_math/requirements.txt",
+      "sha256": "7f8dba42b44be29f02f3dfb9603f2a745b68d6dd60307ff4895aa7678f12d046",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "pipeline/verl_math/run.sh",
+      "sha256": "6e965f3bf52a880592189bf2553bd742d483dd5b3e49523c920b1195d4b146d3",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "scripts/__init__.py",
+      "sha256": "e06c9e9992865246e8f82d13db8080b9802435a7d1882adaa780cfd374bfa736",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "scripts/__pycache__/__init__.cpython-314.pyc",
+      "sha256": "268e241a873ab6867a6c08fba7c23b6a21e421520da4759419bbff64a2a9247c",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "scripts/__pycache__/archive_training_checkpoints.cpython-314.pyc",
+      "sha256": "fce75825222a98b5884209d62da388a0a80fe17280c5de014a377b6d6cd3a995",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "scripts/__pycache__/audit_checkpoint_parameter_delta.cpython-314.pyc",
+      "sha256": "8a02f59c611f6c070366a0c2184f9266d22e198b0d720ae484504572ddc1be43",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "scripts/__pycache__/audit_sdpo_prompt_contract.cpython-314.pyc",
+      "sha256": "05b73e3ba53b0dee70ab52d271cb2735e3cd170e249ddba0e2b253e04f789d2e",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "scripts/__pycache__/audit_verpo_topk_approximation.cpython-314.pyc",
+      "sha256": "5dae598861c70d3af8fad98a7f34e2af188e2be245ff1549894da2b92bdeb0a1",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "scripts/__pycache__/build_migration_manifest.cpython-314.pyc",
+      "sha256": "55598284ea7eb729b79e46c5c688187fdce3f756d5d3b9343f2f4ba49401841f",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "scripts/__pycache__/check_verpo_free.cpython-314.pyc",
+      "sha256": "26d545ef7864e57a720cb4371969dd18dca005b734e6ba290d6581ed795a74de",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "scripts/__pycache__/ensure_modelscope_private_repo.cpython-314.pyc",
+      "sha256": "ab880ae7c267a8a0d4e775143f1e098cf30f71145bb818c8838006a002619919",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "scripts/__pycache__/launch_verpo_verl.cpython-314.pyc",
+      "sha256": "71afee6d81349cbe9049ea0a3145b987a320ebc8276421db7687be6cb8289fb0",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "scripts/__pycache__/package_sdpo_training_data.cpython-314.pyc",
+      "sha256": "a9f31278ad0c4b1f05324cb0d310622067d2123689f15f0dc2041c0cdb37123b",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "scripts/__pycache__/prepare_sdpo_model.cpython-314.pyc",
+      "sha256": "457e932995873f9200456784ffaf4ac079afc4b946df564bde41d26e205aab2d",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "scripts/__pycache__/sync_sdpo_public_bundle.cpython-314.pyc",
+      "sha256": "4409c4fcac1a7e7f100ef3708bbd9179b4d0e6a2ad7114bd47315d7e5127c894",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "scripts/archive_training_checkpoints.py",
+      "sha256": "ce24f336428bba474416186f973902b9b2c436420f92ee2c0f5923db9f3c93cf",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "scripts/audit_checkpoint_parameter_delta.py",
+      "sha256": "cd4ef409a52cb720636d8bebaeecb34380ed74fbec87a2ffef38fa3a5fb52b37",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "scripts/audit_sdpo_prompt_contract.py",
+      "sha256": "d3ff35ca5552d4a36b22a60f0af6f54ea3a5dafa611848723dda102b4dc1ece4",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "scripts/audit_verpo_topk_approximation.py",
+      "sha256": "209a96c08eb30527e7e4d1c475cd5e25fbd7f9640c7207848beaf82fd8567020",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "scripts/build_migration_manifest.py",
+      "sha256": "39bf4f239107b3360a6450f06f1d1bb6b10c2706a2d494dfdbc18e5175568d53",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "scripts/check_verpo_free.py",
+      "sha256": "82a5a4ebdd9042979483893c2c2937c25158da7481ccd91ca17ec34f1d826648",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "scripts/ensure_modelscope_private_repo.py",
+      "sha256": "9794737e3d5add94c0592ce13be5de4635fa237552ac85232ee7ea91ec6b1014",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "scripts/launch_verpo_verl.py",
+      "sha256": "650983976d178f4bf679526129c906bd2dad1794ae1b57280cd438715d2adb0c",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "rewritten"
+    },
+    {
+      "path": "scripts/package_sdpo_training_data.py",
+      "sha256": "b4c215d3d819639cad529ae620b40c57a8dbe17d135f8522d6352c64e63a8d14",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "scripts/prepare_sdpo_model.py",
+      "sha256": "0049cf6e7e121c092c63c1426e9fed65b27b9206bbbd87526ed4370779408cd8",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "scripts/sync_sdpo_google_drive.sh",
+      "sha256": "b48d1c8651db4b5456da52aedb7cda772d7c7db2115e1e7109833c75ba9fdba7",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "scripts/sync_sdpo_public_bundle.py",
+      "sha256": "ba3c33190892ed9918138642c43027e0aeb4f9c90c7ab16984a2fc942ccb7d65",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/arms/ctr_fkl.yaml",
+      "sha256": "cb40e00dc30b766c12e10ea43780a2e0a561fe8aa59e3ac8bc53d1dafe49626a",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/arms/ctr_rkl.yaml",
+      "sha256": "1d62412c13b2f7a4e90833467db3f5b2f5a07e05f54df9c707921e97733c50b4",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/arms/fec_advmod_fkl.yaml",
+      "sha256": "e2113b4ee7f5e162182cc0f11d7c8e85eb2b4f48232f643df6ba1c5010585078",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/arms/fec_advmod_fkl_combined.yaml",
+      "sha256": "abfb95edd06eb287e61cfbc3bf5b3fbc6fbb77ae876a7ad11511fea8f954cc5c",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/arms/fec_fkl.yaml",
+      "sha256": "0d068fd3c45a0d52ce084157198bcbac0540fb2a2a8495ea21f6280f82ce859a",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/arms/fec_fkl_wrong_only.yaml",
+      "sha256": "136de03a7db3b75a453c1bc9b86a190ae7e8ed6391497cee2982203b5d6af6a9",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/arms/fec_rkl.yaml",
+      "sha256": "a58fc44e4b560dbf1887cd7a11fe29d4ccd805e797ca3a707ce16abc1f20623c",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/arms/fixed_fkl.yaml",
+      "sha256": "3d4363c2db2009de839f1e23d6229bb259d336883cea5b8bd665cc44f482bb13",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/arms/fixed_rkl.yaml",
+      "sha256": "714c11e22961565bde6d6a35ffcf3251d36e0714acf53725c450ab8544d90105",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/arms/grpo.yaml",
+      "sha256": "437e92ece23ccfa92b4ea166b42410a87a10993ec391421830530b81460bb2de",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/arms/pure_grpo.yaml",
+      "sha256": "b7e376a85afc8abb5b68589206caa9cb1b49e2cf7466be4ef9e71236120c2713",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/arms/sdpo_jsd_paper.yaml",
+      "sha256": "60295a44737e5693ebb68236b7a0b0db8ef340c5b99bf9d270dc7ef5cd8db4e6",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/arms/srpo_jsd_paper.yaml",
+      "sha256": "aafc3adae51b5237f6ba73a50c96a0d6174ef5862a90634f0134aa6506a960f7",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/base.yaml",
+      "sha256": "b6322c58094f6513af6324bbef875e24a23b547d78aaa70b4020fcbba54512f3",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/finetuning/full.yaml",
+      "sha256": "8d55fd31e0341c2bbe3f882b1aad8b98a94d0f7557470e835c38b0d01da6d937",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/finetuning/lora.yaml",
+      "sha256": "065ea2f2c0ccb3a396736505374957a354e6342462f29620daefcddef4a5d20e",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/hardware/a100_2x_80gb.yaml",
+      "sha256": "9406807934fafde52ac584266dd1370745d6f21e70d1cef44483349afc4631e6",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/hardware/a100_4x_80gb.yaml",
+      "sha256": "060909b42c00247c3a2712e4a0285c7159e5c114476d86367238090fca278e5f",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/hardware/a100_8x_80gb.yaml",
+      "sha256": "a4ee2047d59a3f5a2ccb4f94ac57f1470d084c7a5126eaef495aa97071457085",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/hardware/a800_2x_80gb.yaml",
+      "sha256": "291a697aa72e3e350296b935fe69b845e1bfb7ee7496a7086f8be2cb4883f2a9",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/hardware/a800_4x_80gb.yaml",
+      "sha256": "cbc4ab6c5cf4cbcc01a4e7711a9ce3b251983b7c37e8fd2477bf45301d761f2e",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/hardware/a800_8x_80gb.yaml",
+      "sha256": "bba1e4ebb656d32bc0170cd56730582c6ca44fe36162869ccf79bb7282940e52",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/matrices/fec_two_arm.yaml",
+      "sha256": "d9a172ba69e4b92d82c63c9ec50b70084d7123fc1ed7b4260c2f0cdfd7e75284",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/matrices/grpo_sdpo_srpo_paper_baselines.yaml",
+      "sha256": "cc27c5f9fefc0ae4979316771f25b55aa10abf674bc7e394880dd7050b78f882",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/matrices/qwen3_8b_fec_fkl_wrong_only.yaml",
+      "sha256": "cbf04634af4e20fe592dcc5cb0e9d1df7282e54714d2a588e89d924681186a6a",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/matrices/qwen3_8b_section3_ours_three_arm.yaml",
+      "sha256": "82e331544f8e637dc736e50980debc90fef5e9895612acf445b19cce07c52f8a",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/matrices/sdpo_five_dataset_teacher_arm.yaml",
+      "sha256": "36e45173c5c481213adbc005d66053813f65570f67c218501ff23391cce04a54",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/matrices/sdpo_section3_fec_advmod.yaml",
+      "sha256": "f028dc1b17988cc0835a39bbab8fb5058c933fa88e994f7b17eb2b6a2e3a2efb",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/matrices/sdpo_section3_missing_no_x_ablation_200step.yaml",
+      "sha256": "36a629e1f9bfa22b60c3ebacb8a81b88be2f146d1035316820b34ea6d2679b74",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/matrices/sdpo_section3_missing_no_x_baselines.yaml",
+      "sha256": "1da9a8571426468f6fc76de86d06b89e8b5f191757fa7cc01720e1292d0d25ce",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/matrices/sdpo_srpo_paper_baselines.yaml",
+      "sha256": "0c6aa05f70ae1a0d995b1b9c7cc04d8530d423889d1c0b43d394427f72175d39",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/matrices/seven_arm.yaml",
+      "sha256": "624d57b015a265b779a8d69b5bec279ba27ec6c601d73c577598a5e1dee75f5c",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/models/llama3_2_1b_instruct.yaml",
+      "sha256": "5e5851f644f8c126c0ae68548f6dd240cab76199bb67d048d1efde7fdd6ae3ff",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/models/llama3_2_3b_instruct.yaml",
+      "sha256": "18fb757c6ed62c79b7a7e6dafa6fd00e9c256c71903e7f128c62fa95495120fb",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/models/qwen3_1_7b.yaml",
+      "sha256": "f5bb265689d53786a20778af37179a4b046f16bb9b4a0bbda4fbbcc09ea09c65",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/models/qwen3_4b.yaml",
+      "sha256": "dae8ca09b3035bcf572171a46629c403646836b64c75626c59a67b70730d0108",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/models/qwen3_5_0_8b.yaml",
+      "sha256": "e44217d7ff4507d3cb2b702ed5180a4922990e11076e7a4565204eaee10efc8f",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/models/qwen3_5_2b.yaml",
+      "sha256": "76f1c3ecaab2019f990ffb572eba1e7ba775942414ce64e89499ef8d7c75ba80",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/models/qwen3_8b.yaml",
+      "sha256": "a1a272a91310a8d8bd49103e13c105d75c50cca388175651554f0067b1134775",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/protocols/sdpo_section3_biology.yaml",
+      "sha256": "3cca3a7682439553266d650dd3333113e6bfa9d7638ad9a9aa242ee8d5e03dff",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/protocols/sdpo_section3_chemistry.yaml",
+      "sha256": "06d281ef01b1dfc0f64dea036e4d4ce4a805c68cfec52c0158a90783f8b60b22",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/protocols/sdpo_section3_material.yaml",
+      "sha256": "f219d6ecc99d70b492c5efe449a852e2169150baa88fb2bd364725bf9c67534b",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/protocols/sdpo_section3_physics.yaml",
+      "sha256": "f9768d76617a6b76a1859ebb0b3a2787e1e23a3a9beda84bb93125c7e004fdcf",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/protocols/sdpo_section3_tooluse.yaml",
+      "sha256": "0852204230b4096632e306283b654d0198d6772be799cc57171d1bbcef54ca45",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/README.md",
+      "sha256": "2a788b6d8e5ea7f9f8791f4505de2311cc4daa309488142ca5bb4186e12f7c8e",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/teachers/ema_095.yaml",
+      "sha256": "1e02f5f6db6d11f3d7f027c8afe75cf30fbc1f636e5d75b544611a8b0029e649",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/teachers/ema_099.yaml",
+      "sha256": "71963e1af9b2ba5303267f0e3dd59ab43808c164a65fcd2ea9f3aaca460f98b9",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/teachers/frozen.yaml",
+      "sha256": "5656389efb8753b8579d65011feee3899a834cf008c7e5750bf53e5548080677",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "configs/verpo/teachers/snapshot10.yaml",
+      "sha256": "8742699909a778ad21c5a6aaa04e20e061e7cc6a97f775dd5605c14f2c812df7",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "retained"
+    },
+    {
+      "path": "archive/rlcsd/qwen3_1_7b_verpo_zpd_rlcsd.yaml",
+      "sha256": "2dc423584799f427debb7883c05b6582a2d26f217bdad58fcc831576a90c8d39",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "archived"
+    },
+    {
+      "path": "archive/rlcsd/qwen3_1_7b_verpo_zpd_rlcsd_snapshot10.yaml",
+      "sha256": "7f683cae21ee9ab835f724471c2048e38ccbf37277b283fed1476303743bf69f",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "archived"
+    },
+    {
+      "path": "archive/rlcsd/rlcsd.sh",
+      "sha256": "74438c902caf10549aa586b900b87e8f0791ab999ee764ea518ec167e3e65f07",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "archived"
+    },
+    {
+      "path": "archive/rlcsd/rlcsd_a800_lora_batch32_snapshot10.yaml",
+      "sha256": "21c47a70b1d6feebf5134d09225ab839ac2edf3dd17c71754803a7ec60f59f74",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "archived"
+    },
+    {
+      "path": "archive/rlcsd/rlcsd_public_snapshot10.yaml",
+      "sha256": "0593aea0ab248865fd84e56bd5f661e419d71ee1d18ace7fd73e166a51601eb3",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "archived"
+    },
+    {
+      "path": "archive/rlcsd/test_verl_rewards_archived.py",
+      "sha256": "8b8d38514a1a8db09a3e84e2069cf3ddcd66add1f9fc9ba8c0a2d775938dc84d",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "archived"
+    },
+    {
+      "path": "archive/rlcsd/test_verpo_protocol_archived.py",
+      "sha256": "3b6c8a2096df862504c1cf4df582f324c07b7fb07a9a31113a271fcff2dfc456",
+      "source": "PGR-Probe snapshot 82c1df4",
+      "status": "archived"
+    }
+  ]
+}

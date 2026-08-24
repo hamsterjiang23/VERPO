@@ -1,0 +1,67 @@
+schema_version: 1
+kind: protocol
+id: sdpo_section3_chemistry
+config:
+  identity:
+    protocol: sdpo_section3_chemistry
+  execution:
+    engine: sdpo_section3
+  hardware:
+    actor_micro_batch_per_gpu: 1
+  model:
+    prompt_template_version: sdpo_official_qwen3_no_thinking_v1
+    trust_remote_code: true
+  protocol:
+    dataset_id: chemistry
+    train_file: data/SDPO/verl/chemistry.train.annotated.parquet
+    validation_file: data/SDPO/verl/chemistry.test.parquet
+    train_max_samples: 1890
+    global_prompt_batch: 32
+    validation_batch: 210
+    rollout_n: 8
+    mini_batch_trajectories: 32
+    rollout_importance_clip: 2.0
+    max_reprompt_length: 10240
+    max_prompt_length: 2048
+    max_response_length: 8192
+    validation_response_length: 8192
+    teacher_max_token_len_per_gpu: 18944
+    max_model_len: 18944
+    rollout_temperature: 1.0
+    rollout_top_p: 1.0
+    rollout_top_k: -1
+    validation_n: 16
+    validation_temperature: 0.6
+    validation_top_p: 0.95
+    validation_top_k: -1
+    student_enable_thinking: false
+    teacher_enable_thinking: false
+    validation_enable_thinking: false
+    filter_groups_enabled: false
+    reward_mode: sdpo_sciknoweval_binary
+    train_shuffle: true
+    actor_shuffle: false
+    data_seed: 42
+    total_epochs: 30
+    total_training_steps: 300
+    save_frequency: 50
+    validation_frequency: 5
+    logging_frequency: 1
+    validation_before_training: true
+    learning_rate: 1.0e-5
+    weight_decay: 0.01
+    warmup_steps: 10
+    scheduler: constant
+    grad_clip: 1.0
+    ppo_epochs: 1
+    swanlab_project: qwen3-sdpo-section3-verpo
+  method:
+    cost_alpha: 0.0025
+    cost_epsilon: 2.5e-5
+    # Legacy parameterization (kept for reproducibility; ignored when the
+    # effective alpha/epsilon pair above is present).
+    # cost_floor: 0.0
+    # cost_beta: 0.01
+    temperature: 1.0
+    vocab_mode: topk_truncated
+    top_k: 128

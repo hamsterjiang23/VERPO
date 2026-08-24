@@ -1,0 +1,17 @@
+schema_version: 1
+kind: hardware
+id: a100_4x_80gb
+config:
+  identity:
+    hardware: a100_4x_80gb
+  hardware:
+    engine_id: a100_4x_80gb
+    gpu_count: 4
+    gpu_name_substring: A100
+    gpu_memory_mib_min: 80000
+    gpu_memory_mib_max: 83000
+    rollout_backend: vllm
+    actor_micro_batch_per_gpu: 4
+    vllm_gpu_memory_utilization: 0.6
+    rollout_enforce_eager: false
+    free_cache_engine: true

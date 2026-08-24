@@ -1,0 +1,12 @@
+schema_version: 1
+kind: model
+id: llama3_2_1b_instruct
+config:
+  identity:
+    model: llama3_2_1b_instruct
+  model:
+    hf_id: meta-llama/Llama-3.2-1B-Instruct
+    revision: 9213176726f574b556790deb65791e0c5aa438b6
+    trust_remote_code: false
+    chat_template_thinking_control: none
+    prompt_template_version: llama3_2_instruct_v1

@@ -1,0 +1,20 @@
+schema_version: 1
+kind: matrix
+id: sdpo_five_dataset_teacher_arm
+protocols:
+  - sdpo_section3_biology
+  - sdpo_section3_chemistry
+  - sdpo_section3_material
+  - sdpo_section3_physics
+  - sdpo_section3_tooluse
+teachers:
+  - frozen
+  - snapshot10
+  - ema_095
+arms:
+  - fixed_fkl
+  - fixed_rkl
+  - ctr_fkl
+  - ctr_rkl
+  - fec_fkl
+  - fec_rkl

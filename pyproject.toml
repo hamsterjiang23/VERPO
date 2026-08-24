@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "verpo-zpd"
+version = "0.1.0"
+description = "Portable VERPO-ZPD training with native veRL and JSONL TRL backends."
+requires-python = ">=3.10"
+dependencies = ["pyyaml>=6.0"]
+
+[project.optional-dependencies]
+cpu = [
+  "torch>=2.6",
+  "transformers>=4.57.6,<5",
+  "accelerate>=1.13",
+  "datasets>=2.18,<4.0",
+]
+dev = ["pytest>=8", "ruff>=0.9", "basedpyright>=1.28"]
+gpu = [
+  "torch>=2.6",
+  "transformers==4.57.6",
+  "accelerate>=1.13",
+  "datasets>=2.18,<4.0",
+  "swanlab>=0.5",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["risk_aware_opsd*", "scripts*"]

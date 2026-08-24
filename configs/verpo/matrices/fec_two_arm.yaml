@@ -1,0 +1,6 @@
+schema_version: 1
+kind: matrix
+id: fec_two_arm
+arms:
+  - fec_fkl
+  - fec_rkl

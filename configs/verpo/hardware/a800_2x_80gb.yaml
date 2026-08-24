@@ -1,0 +1,17 @@
+schema_version: 1
+kind: hardware
+id: a800_2x_80gb
+config:
+  identity:
+    hardware: a800_2x_80gb
+  hardware:
+    engine_id: a800_2x_80gb
+    gpu_count: 2
+    gpu_name_substring: A800
+    gpu_memory_mib_min: 80000
+    gpu_memory_mib_max: 83000
+    rollout_backend: sglang
+    actor_micro_batch_per_gpu: 2
+    vllm_gpu_memory_utilization: 0.88
+    rollout_enforce_eager: false
+    free_cache_engine: true

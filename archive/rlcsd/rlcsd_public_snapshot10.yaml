@@ -1,0 +1,40 @@
+schema_version: 1
+kind: protocol
+id: rlcsd_public_snapshot10
+config:
+  identity:
+    protocol: rlcsd_public_snapshot10
+  execution:
+    engine: rlcsd
+  model:
+    prompt_template_version: rlcsd_public_qwen3_thinking_v1
+  protocol:
+    train_max_samples: 60000
+    global_prompt_batch: 64
+    rollout_n: 8
+    max_prompt_length: 2048
+    max_response_length: 16384
+    validation_response_length: 38912
+    teacher_max_token_len_per_gpu: 40960
+    max_model_len: 40960
+    rollout_temperature: 1.0
+    student_enable_thinking: true
+    teacher_enable_thinking: true
+    validation_enable_thinking: true
+    filter_groups_enabled: false
+    reward_mode: binary_boxed_correctness
+    total_epochs: 30
+    total_training_steps: 0
+    save_frequency: 50
+    validation_frequency: 50
+    validation_before_training: true
+    learning_rate: 1.0e-6
+    warmup_steps: 50
+    swanlab_project: qwen3-1.7b-a100_8x_rlcsd_snapshot10-t4k-dapo-matrix
+  method:
+    temperature: 1.0
+    vocab_mode: topk_truncated
+    top_k: 128
+  audit:
+    gradient_enabled: false
+    gradient_max_steps: 0

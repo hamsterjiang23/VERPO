@@ -1,0 +1,14 @@
+schema_version: 1
+kind: matrix
+id: sdpo_srpo_paper_baselines
+protocols:
+  - sdpo_section3_biology
+  - sdpo_section3_chemistry
+  - sdpo_section3_material
+  - sdpo_section3_physics
+  - sdpo_section3_tooluse
+teachers:
+  - ema_095
+arms:
+  - sdpo_jsd_paper
+  - srpo_jsd_paper

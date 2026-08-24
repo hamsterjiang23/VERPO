@@ -1,0 +1,18 @@
+schema_version: 1
+kind: arm
+id: sdpo_jsd_paper
+config:
+  identity:
+    arm: sdpo_jsd_paper
+  model:
+    prompt_template_version: sdpo_official_v2
+  protocol:
+    learning_rate: 1.0e-5
+    swanlab_project: qwen3-sdpo-section3-paper-baselines
+  method:
+    objective: sdpo
+    actor_loss_mode: sdpo_jsd
+    divergence: forward_kl
+    displacement: evidence_vs_none
+    lambda_ref: 0.0
+    lambda_evi: 0.0

@@ -1,0 +1,3 @@
+# CPU/dev dependencies are declared in pyproject.toml extras.
+# The native veRL GPU environment is pinned separately in pipeline/verl_math/requirements.txt.
+-e .[cpu]

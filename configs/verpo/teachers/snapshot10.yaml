@@ -1,0 +1,12 @@
+schema_version: 1
+kind: teacher
+id: snapshot10
+config:
+  identity:
+    teacher: snapshot10
+  teacher:
+    mode: snapshot
+    strategy: snapshot
+    reference_mode: moving_teacher
+    use_ema: false
+    sync_interval: 10

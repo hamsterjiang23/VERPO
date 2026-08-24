@@ -1,0 +1,20 @@
+# Native veRL runtime dependencies. This file is resolved relative to this file.
+-r ../../verl/requirements.txt
+
+# Registered Qwen VERPO-ZPD formal-pipeline additions for the SGLang rollout
+# environment.  SGLang 0.5.8 is the exact version registered by the vendored
+# veRL fork and requires torch 2.9.1.
+datasets==4.8.4
+cachetools>=5.5,<7
+fsspec==2026.2.0
+huggingface-hub>=0.34.0,<2
+# SGLang 0.5.8 pins torchao==0.9.0; PEFT 0.20 requires torchao>0.16.
+peft==0.17.1
+modelscope>=1.29,<2
+pytest>=8.0,<10
+PyYAML>=6.0
+swanlab>=0.6,<1
+torch==2.9.1
+sglang==0.5.8
+ninja>=1.11; sys_platform == "linux"
+psutil>=5.9; sys_platform == "linux"

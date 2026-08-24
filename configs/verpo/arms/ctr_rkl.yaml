@@ -1,0 +1,13 @@
+schema_version: 1
+kind: arm
+id: ctr_rkl
+config:
+  identity:
+    arm: ctr_rkl
+  model:
+    prompt_template_version: srpo_v1
+  method:
+    objective: verpo
+    actor_loss_mode: verpo_zpd
+    divergence: reverse_kl
+    displacement: correct_vs_incorrect

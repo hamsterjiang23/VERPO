@@ -1,0 +1,51 @@
+schema_version: 1
+kind: protocol
+id: rlcsd_a800_lora_batch32_snapshot10
+config:
+  identity:
+    protocol: rlcsd_a800_lora_batch32_snapshot10
+  execution:
+    engine: rlcsd
+  model:
+    prompt_template_version: rlcsd_public_qwen3_thinking_v1
+  protocol:
+    train_max_samples: 60000
+    global_prompt_batch: 32
+    rollout_n: 8
+    max_prompt_length: 2048
+    max_response_length: 16384
+    validation_response_length: 38912
+    teacher_max_token_len_per_gpu: 40960
+    max_model_len: 40960
+    rollout_temperature: 1.0
+    student_enable_thinking: true
+    teacher_enable_thinking: true
+    validation_enable_thinking: true
+    filter_groups_enabled: false
+    reward_mode: binary_boxed_correctness
+    total_epochs: 30
+    total_training_steps: 0
+    save_frequency: 50
+    validation_frequency: 50
+    validation_before_training: true
+    learning_rate: 1.0e-6
+    warmup_steps: 50
+    swanlab_project: qwen3-1.7b-a800-2x-lora64-rlcsd-snapshot10-b32
+  method:
+    temperature: 1.0
+    vocab_mode: topk_truncated
+    top_k: 128
+  hardware:
+    # Fixed one-row actor micro-batches prevent 16K Teacher suffixes from being
+    # dynamically packed into a 40K-token full LM-head allocation.
+    actor_micro_batch_per_gpu: 1
+    # Leave headroom for three long-sequence Teacher views plus the Student
+    # backward pass.  The 0.60 recovery passed steps 1-2 but step 3 had only
+    # 8.88 GiB free for an 8.91-GiB Teacher LM-head output.  Use 0.45 and eager
+    # rollout on this host so the longest registered 16K samples retain a
+    # material allocation margin without changing batch or objective semantics.
+    vllm_gpu_memory_utilization: 0.45
+    rollout_enforce_eager: true
+  audit:
+    gradient_enabled: false
+    gradient_max_steps: 0

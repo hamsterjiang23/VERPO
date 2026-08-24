@@ -1,0 +1,15 @@
+schema_version: 1
+kind: arm
+id: fec_fkl_wrong_only
+config:
+  identity:
+    arm: fec_fkl_wrong_only
+  model:
+    prompt_template_version: srpo_v1
+  method:
+    objective: verpo
+    actor_loss_mode: verpo_zpd
+    divergence: forward_kl
+    displacement: fec
+  zpd:
+    evidence_scope: wrong_only

@@ -1,0 +1,111 @@
+method: verpo_zpd_rlcsd_snapshot10
+protocol_id: rlcsd_public_setting_snapshot10_v1
+profile: a100_8x_rlcsd_snapshot10
+semantic_config:
+  model: qwen3_1_7b
+  finetuning: full
+  hardware: a100_8x_80gb
+  protocol: rlcsd_public_snapshot10
+  teacher: snapshot10
+  arm: fec_fkl
+runtime_base_config: verl/verl/trainer/config/_generated_ppo_trainer.yaml
+launcher: pipeline/verl_math/run.sh
+adv_estimator: grpo
+actor_loss_mode: verpo_zpd
+
+model_repo: Qwen/Qwen3-1.7B
+model_revision: 70d244cc86ccca08cf5af4e1e306ecf908b1ad5e
+trainable_parameters: full
+model_lora_rank: 0
+model_lora_alpha: 128
+model_lora_target_modules: all-linear
+model_lora_merge: false
+dataset_repo: Leyiii/RLCSD
+dataset_revision: 33d7de919af5b03257ff92c30303fddf9afdda4a
+train_file: deepmath_filtered_level5_7/train.parquet
+validation_file: amc23+aime24+aime25/val.parquet
+max_train_samples: 60000
+shuffle: false
+actor_minibatch_shuffle: false
+data_seed: null
+actor_data_loader_seed: 42
+
+student_enable_thinking: true
+teacher_enable_thinking: true
+validation_enable_thinking: true
+prompt_template_version: rlcsd_public_qwen3_thinking_v1
+actor_prompt_suffix: ""
+
+global_prompt_batch_size: 64
+per_device_prompt_batch_size: 8
+group_size: 8
+trajectories_per_rollout_batch: 512
+rlcsd_public_ppo_mini_batch_size: 16
+native_v1_ppo_mini_batch_size: 2
+effective_trajectory_mini_batch_size: 16
+optimizer_updates_per_rollout_batch: 32
+ppo_micro_batch_size_per_gpu: 4
+ppo_epochs: 1
+num_epochs: 30
+learning_rate: 1.0e-6
+weight_decay: 0.01
+warmup_steps: 50
+lr_scheduler_type: constant
+max_grad_norm: 1.0
+actor_use_kl_loss: true
+actor_kl_loss_coef: 0.0
+
+max_prompt_length: 2048
+max_completion_length: 16384
+validation_max_completion_length: 38912
+actor_max_token_len_per_gpu: 40960
+teacher_max_token_len_per_gpu: 40960
+rollout_max_model_len: 40960
+rollout_max_num_batched_tokens: 40960
+vllm_gpu_memory_utilization: 0.6
+vllm_tensor_parallel_size: 1
+
+reward_manager: naive
+reward: binary_boxed_correctness
+dynamic_group_filter_enabled: false
+rollout_temperature: 1.0
+rollout_top_p: 0.95
+rollout_top_k: 20
+rollout_is: token
+rollout_is_threshold: 2.0
+
+validation_n: 12
+validation_temperature: 0.6
+validation_top_p: 0.95
+validation_top_k: 20
+validation_batch_size: 16
+validation_before_training: true
+save_steps: 50
+evaluation_steps: 50
+logging_steps: 5
+verpo_vocab_mode: topk_truncated
+verpo_top_k: 128
+
+verpo:
+  lambda_ref: 0.1
+  lambda_evi: 0.5
+  teacher_mode: snapshot
+  teacher_sync_interval: 10
+  teacher_ema_decay: 0.95
+  qref_source: snapshot_teacher
+  q0_source: snapshot_teacher
+  positive_source: snapshot_teacher
+  negative_source: snapshot_teacher
+  snapshot_counter_unit: successful_actor_optimizer_update
+  skipped_optimizer_step_policy: do_not_advance
+  snapshot_refresh_timing: after_optimizer_update
+  evidence_rollout_scope: all
+  group_zpd_enabled: false
+  sibling_selection_mode: correctness
+  allow_negative_benefit: false
+
+legacy_profile:
+  profile: a100_8x
+  protocol_id: t4k_dapo_reward_ranked_v2
+  compatibility: read_only_reproduction
+  cross_profile_resume_allowed: false

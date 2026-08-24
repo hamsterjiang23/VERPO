@@ -1,0 +1,11 @@
+schema_version: 1
+kind: matrix
+id: seven_arm
+arms:
+  - pure_grpo
+  - fixed_fkl
+  - fixed_rkl
+  - ctr_fkl
+  - ctr_rkl
+  - fec_fkl
+  - fec_rkl

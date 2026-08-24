@@ -1,0 +1,17 @@
+schema_version: 1
+kind: arm
+id: fec_advmod_fkl
+config:
+  identity:
+    arm: fec_advmod_fkl
+  model:
+    prompt_template_version: srpo_v1
+  method:
+    objective: verpo
+    actor_loss_mode: verpo_zpd
+    divergence: forward_kl
+    displacement: fec
+    lambda_ref: 0.1
+    lambda_evi: 0.0
+    advantage_modulation: multiplicative_w
+    advantage_modulation_lambda: 1.0

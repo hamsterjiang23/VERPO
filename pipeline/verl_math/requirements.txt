@@ -1,0 +1,20 @@
+# Native veRL runtime dependencies. This file is resolved relative to this file.
+-r ../../verl/requirements.txt
+
+# Registered Qwen VERPO-ZPD formal-pipeline additions.
+datasets==4.8.4
+fsspec==2026.2.0
+huggingface-hub>=0.34.0,<2
+modelscope>=1.29,<2
+pytest>=8.0,<10
+PyYAML>=6.0
+swanlab>=0.6,<1
+torch>=2.6
+transformers==4.57.6
+# Keep the locally validated veRL/vLLM API surface fixed.  The A800 rollout
+# path uses FlashInfer below instead of vLLM's FA2 varlen kernel.
+vllm[flashinfer]==0.10.1.1
+flashinfer-python==0.2.11
+nvidia-nccl-cu12==2.26.2; sys_platform == "linux"
+ninja>=1.11; sys_platform == "linux"
+psutil>=5.9; sys_platform == "linux"

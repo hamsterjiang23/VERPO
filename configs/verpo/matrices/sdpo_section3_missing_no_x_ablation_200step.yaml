@@ -1,0 +1,113 @@
+schema_version: 1
+kind: matrix
+id: sdpo_section3_missing_no_x_ablation_200step
+overrides:
+  - method.lambda_ref=0.1
+  - method.lambda_evi=1.0
+  - protocol.total_training_steps=200
+cells:
+  # Fixed Teacher: FEC-FKL was blank in the comparison table.
+  - identifier: sdpo_section3_biology__frozen__fec_fkl
+    protocol: sdpo_section3_biology
+    teacher: frozen
+    arm: fec_fkl
+  - identifier: sdpo_section3_chemistry__frozen__fec_fkl
+    protocol: sdpo_section3_chemistry
+    teacher: frozen
+    arm: fec_fkl
+  - identifier: sdpo_section3_material__frozen__fec_fkl
+    protocol: sdpo_section3_material
+    teacher: frozen
+    arm: fec_fkl
+  - identifier: sdpo_section3_physics__frozen__fec_fkl
+    protocol: sdpo_section3_physics
+    teacher: frozen
+    arm: fec_fkl
+  - identifier: sdpo_section3_tooluse__frozen__fec_fkl
+    protocol: sdpo_section3_tooluse
+    teacher: frozen
+    arm: fec_fkl
+
+  # Snapshot10 Teacher: FEC-FKL was blank in the comparison table.
+  - identifier: sdpo_section3_biology__snapshot10__fec_fkl
+    protocol: sdpo_section3_biology
+    teacher: snapshot10
+    arm: fec_fkl
+  - identifier: sdpo_section3_chemistry__snapshot10__fec_fkl
+    protocol: sdpo_section3_chemistry
+    teacher: snapshot10
+    arm: fec_fkl
+  - identifier: sdpo_section3_material__snapshot10__fec_fkl
+    protocol: sdpo_section3_material
+    teacher: snapshot10
+    arm: fec_fkl
+  - identifier: sdpo_section3_physics__snapshot10__fec_fkl
+    protocol: sdpo_section3_physics
+    teacher: snapshot10
+    arm: fec_fkl
+  - identifier: sdpo_section3_tooluse__snapshot10__fec_fkl
+    protocol: sdpo_section3_tooluse
+    teacher: snapshot10
+    arm: fec_fkl
+
+  # EMA 0.95 Teacher: Fixed-FKL, CTR-FKL, and FEC-RKL were blank.
+  - identifier: sdpo_section3_biology__ema_095__fixed_fkl
+    protocol: sdpo_section3_biology
+    teacher: ema_095
+    arm: fixed_fkl
+  - identifier: sdpo_section3_biology__ema_095__ctr_fkl
+    protocol: sdpo_section3_biology
+    teacher: ema_095
+    arm: ctr_fkl
+  - identifier: sdpo_section3_biology__ema_095__fec_rkl
+    protocol: sdpo_section3_biology
+    teacher: ema_095
+    arm: fec_rkl
+  - identifier: sdpo_section3_chemistry__ema_095__fixed_fkl
+    protocol: sdpo_section3_chemistry
+    teacher: ema_095
+    arm: fixed_fkl
+  - identifier: sdpo_section3_chemistry__ema_095__ctr_fkl
+    protocol: sdpo_section3_chemistry
+    teacher: ema_095
+    arm: ctr_fkl
+  - identifier: sdpo_section3_chemistry__ema_095__fec_rkl
+    protocol: sdpo_section3_chemistry
+    teacher: ema_095
+    arm: fec_rkl
+  - identifier: sdpo_section3_material__ema_095__fixed_fkl
+    protocol: sdpo_section3_material
+    teacher: ema_095
+    arm: fixed_fkl
+  - identifier: sdpo_section3_material__ema_095__ctr_fkl
+    protocol: sdpo_section3_material
+    teacher: ema_095
+    arm: ctr_fkl
+  - identifier: sdpo_section3_material__ema_095__fec_rkl
+    protocol: sdpo_section3_material
+    teacher: ema_095
+    arm: fec_rkl
+  - identifier: sdpo_section3_physics__ema_095__fixed_fkl
+    protocol: sdpo_section3_physics
+    teacher: ema_095
+    arm: fixed_fkl
+  - identifier: sdpo_section3_physics__ema_095__ctr_fkl
+    protocol: sdpo_section3_physics
+    teacher: ema_095
+    arm: ctr_fkl
+  - identifier: sdpo_section3_physics__ema_095__fec_rkl
+    protocol: sdpo_section3_physics
+    teacher: ema_095
+    arm: fec_rkl
+  - identifier: sdpo_section3_tooluse__ema_095__fixed_fkl
+    protocol: sdpo_section3_tooluse
+    teacher: ema_095
+    arm: fixed_fkl
+  - identifier: sdpo_section3_tooluse__ema_095__ctr_fkl
+    protocol: sdpo_section3_tooluse
+    teacher: ema_095
+    arm: ctr_fkl
+  - identifier: sdpo_section3_tooluse__ema_095__fec_rkl
+    protocol: sdpo_section3_tooluse
+    teacher: ema_095
+    arm: fec_rkl
