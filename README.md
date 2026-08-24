@@ -1,35 +1,132 @@
-# VERPO-ZPD
+# VERPO: VERIFIED EVIDENCE REGULARIZED POLICY OPTIMIZATION
 
-Portable VERPO-ZPD training code with two backends:
+Evidence-aware policy optimization with Teacher-guided, token-level
+distribution corrections.
 
-- native veRL for the formal SDPO Section 3 protocols and matrix launchers;
-- a lightweight TRL-compatible path for JSONL/math-text experiments.
+VERPO combines a GRPO policy objective with a signed correction derived from
+Teacher distributions under different evidence conditions. The correction is
+controlled at two levels: a prompt-group gate decides whether a group contains
+useful reward variation, and a token-level ZPD controller scales each evidence
+direction by its local benefit and policy-movement cost.
 
-The repository keeps the VERPO objective, Fixed/CTR/FEC displacement modes,
-Forward- and Reverse-KL variants, top-k support, frozen/snapshot/EMA Teacher
-state, length-aware rewards, gradient audits, checkpoint handling, and one
-shared semantic configuration projection.
+The implementation is organized around one semantic configuration and two
+training backends. Native veRL provides the Section 3 protocol launcher;
+the TRL path provides a small JSONL/math-text interface for portable VERPO
+experiments.
 
-Datasets, model weights, credentials, caches, checkpoints, and run artifacts
-are intentionally outside this repository. The examples below show launcher
-interfaces only; provide private data and model locations through the host
-environment or your local configuration.
+## Method
 
-## Repository layout
+```text
+prompt
+  -> Student rollout
+  -> Teacher scoring under evidence conditions
+  -> signed Teacher displacement
+  -> ZPD benefit/cost controller
+  -> GRPO objective + VERPO correction
+  -> updated Student policy
+```
 
-| Path | Purpose |
+For a fixed rollout prefix, the Teacher branches are represented as token
+distributions:
+
+- `q0`: evidence-free Teacher distribution;
+- `qe`: evidence-conditioned Teacher distribution;
+- `q+`, `q-`: positive and negative contrastive Teacher distributions.
+
+The signed Teacher displacement is the only difference between the main
+VERPO variants:
+
+```text
+Fixed:  Delta_t = q_e,t - q_0,t
+CTR:    Delta_t = q_+,t - q_-,t
+FEC:    task direction minus the Fisher projection of the nuisance direction
+```
+
+For the default Forward-KL controller, the evidence correction is weighted by
+
+```text
+w_t = h_t / (h_t + tau * (c_t + rho))
+```
+
+`h_t` is the local evidence benefit and `c_t` is the local policy-movement
+cost. The FEC direction removes the Student-local Fisher projection of the
+evidence-presence nuisance before computing the signed correction.
+
+The backend-neutral trainer combines the reference and evidence terms as
+
+```text
+L_VERPO = lambda_ref * L_ref + lambda_evi * L_evi
+```
+
+The exact full-vocabulary definitions and the selected-support Top-K
+approximation are implemented in `risk_aware_opsd/verpo_zpd.py`.
+
+## Variants and controls
+
+| Variant | Teacher displacement | Purpose |
+| --- | --- | --- |
+| Fixed | `q_e - q_0` | Evidence-conditioned correction |
+| CTR | `q_+ - q_-` | Positive/negative contrastive correction |
+| FEC | Contrastive task direction minus nuisance projection | Evidence-confound removal |
+| Forward-KL | Probability-space correction | Forward divergence path |
+| Reverse-KL | Geometric Teacher path and Student-local Fisher tangent | Reverse divergence path |
+| Top-K | Selected-support approximation | Memory-conscious vocabulary computation |
+
+Teacher state is configurable as:
+
+- `frozen`: fixed initial Teacher;
+- `snapshot10`: synchronize after the configured optimizer-update interval;
+- `ema_095`: update the Teacher with exponential moving average state.
+
+The shared `VERPOConfig` exposes displacement mode, Teacher mode, vocabulary
+mode, group-level ZPD, evidence rollout scope, divergence, coefficients, and
+Teacher synchronization controls.
+
+## Repository structure
+
+| Path | Role |
 | --- | --- |
-| `risk_aware_opsd/` | Shared VERPO math, rewards, Teacher state, data contracts, and TRL trainer. |
-| `pipeline/trl/run.sh` | JSONL/math-text TRL entry point. |
-| `pipeline/verl_math/run.sh` | Native veRL entry point for SDPO Section 3. |
-| `configs/verpo/` | Model, hardware, protocol, Teacher, arm, and matrix definitions. |
-| `verl/` | Vendored veRL source with the VERPO hooks included. |
-| `archive/rlcsd/` | Historical RLCSD material; excluded from the public launch path. |
-| `provenance/` | Migration metadata and file-level provenance. |
+| `risk_aware_opsd/` | Backend-neutral VERPO loss, ZPD controller, Teacher state, reward, and JSONL contract |
+| `verl/verl/trainer/distillation/` | Native veRL VERPO implementation |
+| `pipeline/trl/` | JSONL/math-text TRL entry point |
+| `pipeline/verl_math/` | Native veRL launcher |
+| `configs/verpo/` | Semantic model, protocol, Teacher, arm, and matrix configuration |
+| `archive/rlcsd/` | Historical material outside the active VERPO launch path |
+| `provenance/` | File-level reproducibility metadata |
 
-## Native veRL
+The public training interface is the launcher layer. Internal engine scripts
+are implementation details and should not be invoked directly.
 
-Resolve one cell without side effects or using a GPU:
+## Reproduce with TRL
+
+The TRL interface accepts local JSONL/math-text records. Each row contains a
+`prompt` and `completion`; `response` is accepted as an alternative completion
+field.
+
+```json
+{
+  "prompt": "local prompt text",
+  "completion": "local completion text"
+}
+```
+
+Install the CPU and development environment, then run a one-step smoke:
+
+```bash
+uv sync --extra cpu --extra dev
+
+bash pipeline/trl/run.sh \
+  --train-file path/to/private/train.jsonl \
+  --output-dir outputs/trl-verpo \
+  --max-steps 1
+```
+
+This path is intentionally limited to JSONL/math-text. Parquet protocol data
+belongs to the native veRL entry point.
+
+## Reproduce with native veRL
+
+Resolve one Section 3 cell without allocating a GPU:
 
 ```bash
 bash pipeline/verl_math/run.sh \
@@ -42,7 +139,7 @@ bash pipeline/verl_math/run.sh \
   --print-config
 ```
 
-Inspect a complete matrix before launching it:
+Inspect the complete registered configuration matrix before launching it:
 
 ```bash
 bash pipeline/verl_math/run.sh \
@@ -53,70 +150,58 @@ bash pipeline/verl_math/run.sh \
   --print-command
 ```
 
-Remove the print flag only after reviewing the resolved cells. Formal training
-requires `SWANLAB_API_KEY` from the host environment. Credentials must never
-be placed in YAML files, shell scripts, commands, manifests, or logs.
+The matrix is a configuration composition of five Section 3 protocols, three
+Teacher states, and six Fixed/CTR/FEC Forward- and Reverse-KL arms. It defines
+launch cells; it is not an evaluation table.
 
-## TRL JSONL smoke
+Formal training requires `SWANLAB_API_KEY` from the host environment. Use
+`--print-config` or `--print-command` before any resource-consuming launch.
 
-The TRL path accepts local JSONL/math-text records. Each row contains `prompt`
-and `completion` (or `response`):
+## Local assets and credentials
 
-```bash
-bash pipeline/trl/run.sh \
-  --train-file path/to/private/train.jsonl \
-  --output-dir outputs/trl-smoke
-```
+Data, model weights, checkpoints, logs, caches, and credentials are operator
+inputs and are not committed here. Configure only local paths and host-managed
+credentials:
 
-The input file is deliberately not included in this repository. Keep local
-fixtures, checkpoints, and metrics under ignored output directories.
-
-## Data and model locations
-
-The launchers support host-specific paths without changing experiment identity.
-Set only the variables needed by your environment:
-
-| Variable | Purpose |
+| Variable | Meaning |
 | --- | --- |
-| `MODEL_PATH` | Existing local model snapshot. |
-| `MODEL_CACHE` or `HF_HOME` | Model cache location. |
-| `SDPO_DATA_DIR` | Private local root containing the protocol data files. |
-| `TRAIN_FILE` / `VAL_FILE` | Explicit training or validation file overrides. |
-| `OUTPUT_ROOT` | Output directory for a single-cell launch. |
-| `MATRIX_OUTPUT_ROOT` | Matrix output root. |
-| `SWANLAB_API_KEY` | SwanLab credential injected by the host. |
+| `SDPO_DATA_DIR` | Operator-provided local data root |
+| `TRAIN_FILE` / `VAL_FILE` | Explicit local file overrides |
+| `MODEL_PATH` | Local model snapshot |
+| `MODEL_CACHE` / `HF_HOME` | Model cache |
+| `SWANLAB_API_KEY` | Host-injected SwanLab credential |
+| `OUTPUT_ROOT` | Single-cell output root |
+| `MATRIX_OUTPUT_ROOT` | Matrix output root |
 
-Data preparation and distribution details are intentionally omitted from this
-public README. Keep private manifest or storage instructions outside the
-repository or in an access-controlled document.
+This README intentionally omits data distribution details, storage identifiers,
+cloud storage, private manifests, and internal asset preparation procedures.
+Never place `SWANLAB_API_KEY` in commands, YAML, README examples, manifests, or
+logs.
 
-## Configuration and provenance
+## Configuration
 
-The semantic schema is documented in
-[`configs/verpo/README.md`](configs/verpo/README.md). The migration
-manifest records the source snapshot, vendored veRL baseline, file hashes, and
-whether each custom file was retained, rewritten, or archived:
+Semantic configuration is composed from model, finetuning, hardware, protocol,
+Teacher, and arm overlays. The field reference and available identifiers are
+documented in [`configs/verpo/README.md`](configs/verpo/README.md).
 
-[`provenance/migration_manifest.json`](provenance/migration_manifest.json)
-
-RLCSD files under `archive/rlcsd/` are archival reproducibility material and
-are not accepted by the public launcher.
+Each resolved launch can emit a semantic configuration and backend projections
+under its output provenance directory. The `archive/rlcsd/` directory is not
+part of the active public launch path.
 
 ## Environment
 
-Use `uv` with the committed lockfile. CPU/development dependencies are kept
-separate from the GPU training profile:
+Use the committed `uv.lock` file. CPU/development dependencies are separate
+from the GPU training profile:
 
 ```bash
 uv sync --extra cpu --extra dev
 ```
 
-The GPU environment is intended for a host with the matching CUDA, veRL, and
-rollout runtime stack:
+For a host with the matching CUDA, veRL, and rollout runtime:
 
 ```bash
 uv sync --extra gpu
 ```
 
-Do not commit `.env` files, model weights, datasets, checkpoints, or generated
-experiment outputs.
+Do not commit `.env` files, datasets, model weights, checkpoints, logs, or
+generated output directories.

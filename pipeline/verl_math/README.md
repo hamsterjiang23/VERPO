@@ -11,11 +11,11 @@ environment, resolves the host-provided data and model locations, enables
 SwanLab, and then starts training. Data distribution details are intentionally
 outside this repository.
 
-## One-command paper baseline training
+## Configured protocol matrix
 
-Run the following command from the repository root to train the paper-faithful
-SDPO and SRPO baselines across all five datasets. The matrix contains 10 cells
-and runs them sequentially in the declared order:
+Run the following command from the repository root to launch the registered
+SDPO and SRPO protocol cells. The matrix contains 10 configured cells and runs
+them sequentially in the declared order:
 
 ```bash
 bash pipeline/verl_math/run.sh \
@@ -25,13 +25,12 @@ bash pipeline/verl_math/run.sh \
   --matrix sdpo_srpo_paper_baselines
 ```
 
-Each cell receives a separate
-`protocol__ema_095__arm` output directory under the matrix output root. The
-launcher validates before training, caps every cell at 300 optimizer steps,
-saves checkpoints every 50 steps, and preserves rollout and validation output.
+Each cell receives a separate `protocol__ema_095__arm` output directory under
+the matrix output root. The launcher applies the cell's declared validation,
+checkpoint, and training settings.
 
 Before allocating GPUs, resolve the same matrix without dependency setup,
-downloads, credential checks, or training:
+asset preparation, credential checks, or training:
 
 ```bash
 bash pipeline/verl_math/run.sh \
@@ -47,10 +46,10 @@ matrix. Formal runs use SwanLab online logging; set `SWANLAB_API_KEY` in the
 server environment when the deployment does not already provide it. Do not put
 credentials in YAML files or shell scripts.
 
-## Single baseline cell
+## Single protocol cell
 
-Use `--protocol` and `--arm` to run one dataset/objective pair. This example
-starts the SDPO baseline on Biology:
+Use `--protocol` and `--arm` to run one protocol/arm pair. This example selects
+the SDPO JSD configuration for Biology:
 
 ```bash
 bash pipeline/verl_math/run.sh \
@@ -62,7 +61,8 @@ bash pipeline/verl_math/run.sh \
   --arm sdpo_jsd_paper
 ```
 
-For SRPO, change the arm to `srpo_jsd_paper`. The registered protocol names are:
+For the SRPO JSD configuration, change the arm to `srpo_jsd_paper`. The
+registered protocol names are:
 
 - `sdpo_section3_biology`
 - `sdpo_section3_chemistry`
@@ -72,10 +72,10 @@ For SRPO, change the arm to `srpo_jsd_paper`. The registered protocol names are:
 
 Add `--print-config` to inspect a single resolved cell without launching it.
 
-## GRPO comparison matrix
+## Method-arm matrix
 
-To run matched GRPO, SDPO, and SRPO baselines across all five datasets, launch
-the 15-cell comparison matrix:
+To resolve the configured GRPO, SDPO, and SRPO method arms across all five
+protocols, launch the 15-cell method matrix:
 
 ```bash
 bash pipeline/verl_math/run.sh \
@@ -87,7 +87,7 @@ bash pipeline/verl_math/run.sh \
 
 Use `--print-command` first when checking a new host. The `grpo` arm shares the
 SRPO prompt, sampling, mini-batch, and learning-rate settings, but disables the
-paper Teacher and uses the pure PPO/GRPO objective.
+Teacher correction and uses the pure PPO/GRPO objective.
 
 ## Qwen3-8B wrong-only branch
 
