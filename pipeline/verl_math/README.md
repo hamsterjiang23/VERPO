@@ -5,11 +5,11 @@ setting is SDPO Section 3 on the registered Biology, Chemistry, Material,
 Physics, and Tool Use protocols. Scripts under `engines/` are internal details
 and must not be invoked directly.
 
-The public launcher resolves the semantic YAML under `configs/verpo/`, checks
-the registered model and hardware constraints, bootstraps the Python/veRL
-environment, verifies or downloads the complete public SDPO data bundle,
-downloads the pinned model snapshot when necessary, enables SwanLab, and then
-starts training.
+The launcher resolves the semantic YAML under `configs/verpo/`, checks the
+registered model and hardware constraints, bootstraps the Python/veRL
+environment, resolves the host-provided data and model locations, enables
+SwanLab, and then starts training. Data distribution details are intentionally
+outside this repository.
 
 ## One-command paper baseline training
 
@@ -126,19 +126,20 @@ to `all` with `--set`.
 
 ## Paths and overrides
 
-The launcher prepares assets automatically. These optional environment
-variables override machine-specific locations without changing experiment
-identity:
+The launcher accepts host-specific locations through optional environment
+variables without changing experiment identity. Data and model assets must be
+provided by the operator:
 
 | Variable | Purpose |
 | --- | --- |
-| `MODEL_PATH` | Existing pinned Hugging Face snapshot. |
-| `MODEL_CACHE` or `HF_HOME` | Hugging Face download/cache root. |
-| `SDPO_DATA_DIR` | Installed SDPO public-bundle directory. |
+| `MODEL_PATH` | Existing local model snapshot. |
+| `MODEL_CACHE` or `HF_HOME` | Model cache root. |
+| `SDPO_DATA_DIR` | Private local root containing protocol data files. |
+| `TRAIN_FILE` / `VAL_FILE` | Explicit training or validation file overrides. |
 | `OUTPUT_ROOT` | Output directory for a single-cell launch. |
 | `MATRIX_OUTPUT_ROOT` | Matrix root; each cell receives a distinct subdirectory. |
 | `SWANLAB_API_KEY` | SwanLab authentication supplied by the server environment. |
 
-For the complete semantic field reference, baseline definitions, prompt
-contracts, and troubleshooting guide, see
+For the semantic field reference, baseline definitions, prompt contracts, and
+troubleshooting guide, see
 [`configs/verpo/README.md`](../../configs/verpo/README.md).
