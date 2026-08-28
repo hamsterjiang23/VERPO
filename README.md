@@ -1,7 +1,9 @@
-# VERPO: VERIFIED EVIDENCE REGULARIZED POLICY OPTIMIZATION
+# VERPO-ZPD
 
-Evidence-aware policy optimization with Teacher-guided, token-level
-distribution corrections.
+[English](README.md) | [简体中文](README.zh-CN.md)
+
+**VERPO: Verified Evidence-Regularized Policy Optimization** — evidence-aware
+policy optimization with Teacher-guided, token-level distribution corrections.
 
 VERPO combines a GRPO policy objective with a signed correction derived from
 Teacher distributions under different evidence conditions. The correction is
@@ -13,6 +15,22 @@ The implementation is organized around one semantic configuration and two
 training backends. Native veRL provides the Section 3 protocol launcher;
 the TRL path provides a small JSONL/math-text interface for portable VERPO
 experiments.
+
+## Table of Contents
+
+- [Method](#method)
+- [Variants and controls](#variants-and-controls)
+- [Repository structure](#repository-structure)
+- [Installation](#installation)
+- [Quickstart: TRL (JSONL)](#quickstart-trl-jsonl)
+- [Quickstart: native veRL](#quickstart-native-verl)
+- [Semantic configuration](#semantic-configuration)
+- [Environment variables](#environment-variables)
+- [Data and credentials](#data-and-credentials)
+- [Citation](#citation)
+- [License](#license)
+- [Contributors](#contributors)
+- [Acknowledgments](#acknowledgments)
 
 ## Method
 
@@ -87,9 +105,10 @@ Teacher synchronization controls.
 | Path | Role |
 | --- | --- |
 | `risk_aware_opsd/` | Backend-neutral VERPO loss, ZPD controller, Teacher state, reward, and JSONL contract |
-| `verl/verl/trainer/distillation/` | Native veRL VERPO implementation |
+| `scripts/` | Launching, packaging, and audit utilities |
+| `verl/verl/trainer/distillation/` | Native veRL VERPO implementation (vendored veRL tree) |
 | `pipeline/trl/` | JSONL/math-text TRL entry point |
-| `pipeline/verl_math/` | Native veRL launcher |
+| `pipeline/verl_math/` | Native veRL launcher and engine scripts |
 | `configs/verpo/` | Semantic model, protocol, Teacher, arm, and matrix configuration |
 | `archive/rlcsd/` | Historical material outside the active VERPO launch path |
 | `provenance/` | File-level reproducibility metadata |
@@ -97,7 +116,26 @@ Teacher synchronization controls.
 The public training interface is the launcher layer. Internal engine scripts
 are implementation details and should not be invoked directly.
 
-## Reproduce with TRL
+## Installation
+
+Use the committed `uv.lock` file. CPU/development dependencies are separate
+from the GPU training profile:
+
+```bash
+# CPU development environment (portable TRL experiments, config resolution)
+uv sync --extra cpu --extra dev
+
+# Host with the matching CUDA, veRL, and rollout runtime
+uv sync --extra gpu
+```
+
+The native veRL GPU environment is pinned separately in
+`pipeline/verl_math/requirements.txt`.
+
+Do not commit `.env` files, datasets, model weights, checkpoints, logs, or
+generated output directories.
+
+## Quickstart: TRL (JSONL)
 
 The TRL interface accepts local JSONL/math-text records. Each row contains a
 `prompt` and `completion`; `response` is accepted as an alternative completion
@@ -124,7 +162,7 @@ bash pipeline/trl/run.sh \
 This path is intentionally limited to JSONL/math-text. Parquet protocol data
 belongs to the native veRL entry point.
 
-## Reproduce with native veRL
+## Quickstart: native veRL
 
 Resolve one Section 3 cell without allocating a GPU:
 
@@ -157,7 +195,17 @@ launch cells; it is not an evaluation table.
 Formal training requires `SWANLAB_API_KEY` from the host environment. Use
 `--print-config` or `--print-command` before any resource-consuming launch.
 
-## Local assets and credentials
+## Semantic configuration
+
+Semantic configuration is composed from model, finetuning, hardware, protocol,
+Teacher, and arm overlays. The field reference and available identifiers are
+documented in [`configs/verpo/README.md`](configs/verpo/README.md).
+
+Each resolved launch can emit a semantic configuration and backend projections
+under its output provenance directory. The `archive/rlcsd/` directory is not
+part of the active public launch path.
+
+## Environment variables
 
 Data, model weights, checkpoints, logs, caches, and credentials are operator
 inputs and are not committed here. Configure only local paths and host-managed
@@ -173,35 +221,42 @@ credentials:
 | `OUTPUT_ROOT` | Single-cell output root |
 | `MATRIX_OUTPUT_ROOT` | Matrix output root |
 
+## Data and credentials
+
 This README intentionally omits data distribution details, storage identifiers,
 cloud storage, private manifests, and internal asset preparation procedures.
 Never place `SWANLAB_API_KEY` in commands, YAML, README examples, manifests, or
 logs.
 
-## Configuration
+## Citation
 
-Semantic configuration is composed from model, finetuning, hardware, protocol,
-Teacher, and arm overlays. The field reference and available identifiers are
-documented in [`configs/verpo/README.md`](configs/verpo/README.md).
+A paper reference will be added here upon publication. Until then, please cite
+this repository:
 
-Each resolved launch can emit a semantic configuration and backend projections
-under its output provenance directory. The `archive/rlcsd/` directory is not
-part of the active public launch path.
-
-## Environment
-
-Use the committed `uv.lock` file. CPU/development dependencies are separate
-from the GPU training profile:
-
-```bash
-uv sync --extra cpu --extra dev
+```bibtex
+@misc{verpo-zpd,
+  title        = {{VERPO-ZPD}: Verified Evidence-Regularized Policy Optimization},
+  author       = {hamsterjiang23 and thomass1003},
+  year         = {2026},
+  howpublished = {\url{https://github.com/hamsterjiang23/VERPO-ZPD}},
+}
 ```
 
-For a host with the matching CUDA, veRL, and rollout runtime:
+## License
 
-```bash
-uv sync --extra gpu
-```
+The project sources at the repository root do not yet declare a license. The
+vendored veRL tree under `verl/` remains under its original
+[Apache License 2.0](verl/LICENSE).
 
-Do not commit `.env` files, datasets, model weights, checkpoints, logs, or
-generated output directories.
+## Contributors
+
+| Contributor | Role | GitHub |
+| --- | --- | --- |
+| hamsterjiang23 | Maintainer | [@hamsterjiang23](https://github.com/hamsterjiang23) |
+| thomass1003 | Contributor | [@thomass1003](https://github.com/thomass1003) |
+
+## Acknowledgments
+
+The native backend builds on [veRL](https://github.com/volcengine/verl),
+an RL training library initiated by the ByteDance Seed team and maintained by
+the veRL community.
