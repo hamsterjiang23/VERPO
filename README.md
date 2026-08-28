@@ -1,5 +1,7 @@
 # VERPO-ZPD
 
+[English](README.md) | [简体中文](README.zh-CN.md)
+
 **VERPO: Verified Evidence-Regularized Policy Optimization** — evidence-aware
 policy optimization with Teacher-guided, token-level distribution corrections.
 
