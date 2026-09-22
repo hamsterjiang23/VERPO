@@ -27,7 +27,6 @@ VERPO 保留 GRPO 的任务奖励目标，通过带有证据的 Teacher 回放�
 - [当前实现与验证边界](#当前实现与验证边界)
 - [最小入口](#最小入口)
 - [论文配置](#论文配置)
-- [论文报告结果](#论文报告结果)
 - [引用与许可](#引用与许可)
 
 ## 方法概览
@@ -77,28 +76,13 @@ bash pipeline/verl_math/run.sh \
 200 trainer steps 与 200 optimizer updates 不等价；现有一般用途配置保留其 300-step 预算。
 公开版本未提供 RLSD/RLCSD 主表结果对应的可运行矩阵，不能将论文转录视作实现验收。
 
-## 论文报告结果
-
-以下为论文 v2 表 2 转录，**不是本次 checkout 的测量结果**。
-论文使用 test split 记录训练期间评估并选择每个任务的最高分，Average 是五个任务各自最高分的非加权平均。
-完整转录保留 collapse 和 reward hacking 标记。
-
-| Backbone | VERPO-LW（%） | VERPO-AM（%） |
-|---|---|---|
-| Qwen3-4B | 68.57 | 66.71 |
-| Qwen3-8B | 71.44 | 70.58 |
-| Llama-3.2-1B | 56.57 | 55.19 |
-
-历史 run ID、选中 step、原始预测和未舍入指标尚未逐项对应，因此结果文件中这些字段为 null。
-新 rollout-only 运行采用独立证据来源标识，不自动继承历史分数。
-
 ## 引用与许可
 
 如果在研究中使用 VERPO，请引用以下论文：
 
 **[VERPO: Verified Evidence Regularized Policy Optimization](https://arxiv.org/abs/2609.06100)**，
 Haijiang Li 等，arXiv:2609.06100（2026）。
-以下 BibTeX 与 [CITATION.cff](CITATION.cff) 均使用 arXiv 的统一入口；上方结果表仍明确对应论文 v2。
+以下 BibTeX 与 [CITATION.cff](CITATION.cff) 均使用 arXiv 的统一入口。
 
 ```bibtex
 @article{li2026verpo,

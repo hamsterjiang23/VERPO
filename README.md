@@ -32,7 +32,6 @@ balance local reward alignment against Fisher movement cost.
 - [Implementation and verification status](#implementation-and-verification-status)
 - [Quickstart](#quickstart)
 - [Paper configurations](#paper-configurations)
-- [Reported results](#reported-results)
 - [Repository map](#repository-map)
 - [Citation and license](#citation-and-license)
 
@@ -119,24 +118,6 @@ The historical general-purpose profiles retain their 300-step budget and their
 own coefficients. RLSD/RLCSD paper numbers are transcribed in the results archive;
 they do not imply runnable baseline matrices in this public release.
 
-## Reported results
-
-The following values are **paper v2 Table 2 transcriptions**, not measurements of
-this checkout. The paper selects the highest evaluation score per task using the
-test split during training. Average is the unweighted average of those separate
-maxima, not a common/final checkpoint. Collapsed runs and reward hacking are
-retained in the [complete transcription](results/paper_v2_table2.json).
-
-| Backbone | VERPO-LW (%) | VERPO-AM (%) |
-|---|---|---|
-| Qwen3-4B | 68.57 | 66.71 |
-| Qwen3-8B | 71.44 | 70.58 |
-| Llama-3.2-1B | 56.57 | 55.19 |
-
-Run IDs, selected steps, raw predictions and source-precision metrics have not
-been matched to these historical entries. They are explicitly null in the
-transcription. New rollout-only runs have a separate evidence-source identity.
-
 ## Repository map
 
 - `risk_aware_opsd/`: losses, semantic configuration, data contract and evidence selection.
@@ -153,8 +134,7 @@ If you use VERPO in your research, please cite the paper:
 
 **[VERPO: Verified Evidence Regularized Policy Optimization](https://arxiv.org/abs/2609.06100)**,
 Haijiang Li et al., arXiv:2609.06100 (2026).
-The following entry and [CITATION.cff](CITATION.cff) use the canonical arXiv URL;
-the result tables above remain explicitly tied to v2.
+The following entry and [CITATION.cff](CITATION.cff) use the canonical arXiv URL.
 
 ```bibtex
 @article{li2026verpo,
