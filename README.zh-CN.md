@@ -4,10 +4,33 @@
 
 **Verified Evidence Regularized Policy Optimization**
 
-[论文 v2](https://arxiv.org/abs/2609.06100v2) · [复现说明](docs/reproduce_paper.md) · [数据准备](docs/data.md) · [结果及来源](results/README.md)
+[![arXiv](https://img.shields.io/badge/arXiv-2609.06100-b31b1b.svg)](https://arxiv.org/abs/2609.06100) [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
 
-VERPO 保留 GRPO 的 outcome objective，用停止梯度的 token controller 决定接受多少证据修正。
-Fixed、CTR、FEC 定义不同修正方向；LW 加权证据损失，AM 调制 token advantage。
+[论文](https://arxiv.org/abs/2609.06100) · [PDF](https://arxiv.org/pdf/2609.06100) · [引用](#引用与许可) · [复现说明](docs/reproduce_paper.md) · [数据准备](docs/data.md) · [结果及来源](results/README.md)
+
+本仓库提供论文 **[VERPO: Verified Evidence Regularized Policy Optimization](https://arxiv.org/abs/2609.06100)** 的实现。
+
+> Haijiang Li, Chengyu Lv, Yi Zhang, Rui Qian, Zhibing Zhang, Xiangqing Shen, Junjie Yang, Yuchen Zhang, Wenyuan Jiang, Hanqing Hu, Cangqi Zhou。
+>
+> *arXiv:2609.06100*，2026。[DOI: 10.48550/arXiv.2609.06100](https://doi.org/10.48550/arXiv.2609.06100)
+
+VERPO 保留 GRPO 的任务奖励目标，通过带有证据的 Teacher 回放，为逐 token 修正提供指导。
+它将监督拆成无证据参考项和带符号的证据修正项，再用停止梯度的控制器，平衡修正方向与奖励方向的一致性以及 Fisher 移动代价。
+
+- **Fisher Evidence Contrast（FEC）**：结合正确证据、错误证据和无证据 Teacher 分支，减弱由证据出现本身引起的分布偏移。
+- **两种更新路径**：VERPO-LW 加权证据损失；VERPO-AM 调制 token advantage；另有配置同时启用两条路径。
+- **实验设置**：使用 Qwen3-4B、Qwen3-8B 和 Llama-3.2-1B，覆盖生物、化学、材料科学、物理和工具调用五类任务。
+
+## 目录
+
+- [方法概览](#方法概览)
+- [当前实现与验证边界](#当前实现与验证边界)
+- [最小入口](#最小入口)
+- [论文配置](#论文配置)
+- [论文报告结果](#论文报告结果)
+- [引用与许可](#引用与许可)
+
+## 方法概览
 
 流程：原问题 → 同组 Student rollouts → verifier 判定正确性和格式 → 排除目标自身选取正负证据 → Teacher 回放目标前缀 → FEC 与 token controller → 联合更新。
 
@@ -71,5 +94,24 @@ bash pipeline/verl_math/run.sh \
 
 ## 引用与许可
 
-论文 DOI：`10.48550/arXiv.2609.06100`。完整 BibTeX 见[英文首页](README.md#citation-and-license)，机器可读引用见 [CITATION.cff](CITATION.cff)。
+如果在研究中使用 VERPO，请引用以下论文：
+
+**[VERPO: Verified Evidence Regularized Policy Optimization](https://arxiv.org/abs/2609.06100)**，
+Haijiang Li 等，arXiv:2609.06100（2026）。
+以下 BibTeX 与 [CITATION.cff](CITATION.cff) 均使用 arXiv 的统一入口；上方结果表仍明确对应论文 v2。
+
+```bibtex
+@article{li2026verpo,
+  title={VERPO: Verified Evidence Regularized Policy Optimization},
+  author={Li, Haijiang and Lv, Chengyu and Zhang, Yi and Qian, Rui and Zhang, Zhibing and Shen, Xiangqing and Yang, Junjie and Zhang, Yuchen and Jiang, Wenyuan and Hu, Hanqing and Zhou, Cangqi},
+  journal={arXiv preprint arXiv:2609.06100},
+  eprint={2609.06100},
+  archivePrefix={arXiv},
+  primaryClass={cs.LG},
+  year={2026},
+  doi={10.48550/arXiv.2609.06100},
+  url={https://arxiv.org/abs/2609.06100}
+}
+```
+
 主项目新增代码采用 [Apache-2.0](LICENSE)，第三方代码保留原版权和许可声明，见[第三方清单](THIRD_PARTY_NOTICES.md)。

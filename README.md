@@ -4,11 +4,39 @@
 
 **Verified Evidence Regularized Policy Optimization**
 
-[Paper (arXiv v2)](https://arxiv.org/abs/2609.06100v2) · [Reproduction guide](docs/reproduce_paper.md) · [Data](docs/data.md) · [Results and provenance](results/README.md)
+[![arXiv](https://img.shields.io/badge/arXiv-2609.06100-b31b1b.svg)](https://arxiv.org/abs/2609.06100) [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
 
-VERPO retains the GRPO outcome objective and uses a stopped token controller to
-accept evidence-induced corrections. Fixed, CTR and FEC select different
-correction directions; LW weights the evidence loss and AM modulates advantages.
+[Paper](https://arxiv.org/abs/2609.06100) · [PDF](https://arxiv.org/pdf/2609.06100) · [Citation](#citation-and-license) · [Reproduction guide](docs/reproduce_paper.md) · [Data](docs/data.md) · [Results and provenance](results/README.md)
+
+Implementation of **[VERPO: Verified Evidence Regularized Policy Optimization](https://arxiv.org/abs/2609.06100)**.
+
+> Haijiang Li, Chengyu Lv, Yi Zhang, Rui Qian, Zhibing Zhang, Xiangqing Shen, Junjie Yang, Yuchen Zhang, Wenyuan Jiang, Hanqing Hu, and Cangqi Zhou.
+>
+> *arXiv:2609.06100*, 2026. [DOI: 10.48550/arXiv.2609.06100](https://doi.org/10.48550/arXiv.2609.06100)
+
+VERPO retains the GRPO outcome objective while using evidence-conditioned Teacher
+replay to guide token-level corrections. It separates the evidence-free reference
+term from the signed evidence correction, then uses a stopped controller to
+balance local reward alignment against Fisher movement cost.
+
+- **Fisher Evidence Contrast (FEC):** attenuate evidence-presence shifts using
+  correct, incorrect and evidence-free Teacher branches.
+- **Two update paths:** VERPO-LW weights the evidence loss; VERPO-AM modulates
+  token advantages. A separate configuration enables both paths.
+- **Benchmark setup:** Qwen3-4B, Qwen3-8B and Llama-3.2-1B across Biology,
+  Chemistry, Materials Science, Physics and Tool Use.
+
+## Contents
+
+- [Method overview](#method-overview)
+- [Implementation and verification status](#implementation-and-verification-status)
+- [Quickstart](#quickstart)
+- [Paper configurations](#paper-configurations)
+- [Reported results](#reported-results)
+- [Repository map](#repository-map)
+- [Citation and license](#citation-and-license)
+
+## Method overview
 
 ```mermaid
 flowchart LR
@@ -121,14 +149,24 @@ transcription. New rollout-only runs have a separate evidence-source identity.
 
 ## Citation and license
 
+If you use VERPO in your research, please cite the paper:
+
+**[VERPO: Verified Evidence Regularized Policy Optimization](https://arxiv.org/abs/2609.06100)**,
+Haijiang Li et al., arXiv:2609.06100 (2026).
+The following entry and [CITATION.cff](CITATION.cff) use the canonical arXiv URL;
+the result tables above remain explicitly tied to v2.
+
 ```bibtex
 @article{li2026verpo,
   title={VERPO: Verified Evidence Regularized Policy Optimization},
   author={Li, Haijiang and Lv, Chengyu and Zhang, Yi and Qian, Rui and Zhang, Zhibing and Shen, Xiangqing and Yang, Junjie and Zhang, Yuchen and Jiang, Wenyuan and Hu, Hanqing and Zhou, Cangqi},
   journal={arXiv preprint arXiv:2609.06100},
+  eprint={2609.06100},
+  archivePrefix={arXiv},
+  primaryClass={cs.LG},
   year={2026},
   doi={10.48550/arXiv.2609.06100},
-  url={https://arxiv.org/abs/2609.06100v2}
+  url={https://arxiv.org/abs/2609.06100}
 }
 ```
 
