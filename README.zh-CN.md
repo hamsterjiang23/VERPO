@@ -10,6 +10,8 @@
 
 **作者：** Haijiang Li, Chengyu Lv, Yi Zhang, Rui Qian, Zhibing Zhang, Xiangqing Shen, Junjie Yang, Yuchen Zhang, Wenyuan Jiang, Hanqing Hu, Cangqi Zhou
 
+**联系邮箱：** [hj523hj@163.com](mailto:hj523hj@163.com)
+
 ## Abstract
 
 可验证奖励为语言模型提供了可靠的任务级反馈，但基于 Group Relative Policy Optimization（GRPO）的方法将序列级 advantage 均匀应用于所有 token。这种粗粒度的信用分配会奖励或惩罚整条回答，却无法区分哪些局部决策应该保留、强化或修改。另一方面，基于证据的自蒸馏能提供更密集的 token 级监督，但模仿 Teacher 也可能引入风格偏差和失准的置信度；当这些信号与任务成功不一致时，训练可能因此失稳。
@@ -39,20 +41,11 @@
 <details>
 <summary>使用指南</summary>
 
-- [当前实现与验证边界](#当前实现与验证边界)
 - [最小入口](#最小入口)
 - [论文配置](#论文配置)
 - [引用与许可](#引用与许可)
 
 </details>
-
-## 当前实现与验证边界
-
-正式训练入口为原生 veRL。当前版本统一从**同一 prompt group 的其他 rollout** 选择证据，不回退到数据集 solution 或标准答案。标准答案仅供 verifier 使用。
-选中的正确回答是证据文本，`q+` 是 Teacher 在该证据条件下回放目标回答前缀得到的分布；`q0` 和 reference 不含证据。EMA 模式沿用 moving Teacher shadow 作为这两个分支，reference 损失不受证据门控关闭。
-
-`pipeline/trl/` 目前只提供微型模型和合成 token 的 **synthetic smoke**，不代表真实预训练模型的 TRL/GRPO 训练支持。
-默认 CI 不安装 torch；张量测试在缺少 torch 时明确跳过。CPU 检查不能证明 GPU 训练或论文分数已经复现，详见[验证记录](docs/verification.md)。
 
 ## 最小入口
 

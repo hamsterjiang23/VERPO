@@ -10,6 +10,8 @@ This repository provides the implementation of our paper, [VERPO](https://arxiv.
 
 **Authors:** Haijiang Li, Chengyu Lv, Yi Zhang, Rui Qian, Zhibing Zhang, Xiangqing Shen, Junjie Yang, Yuchen Zhang, Wenyuan Jiang, Hanqing Hu, Cangqi Zhou
 
+**Contact:** [hj523hj@163.com](mailto:hj523hj@163.com)
+
 ## Abstract
 
 Verifiable rewards improve language models through reliable task-level feedback, but methods based on Group Relative Policy Optimization (GRPO) apply a sequence-level advantage uniformly across all tokens. This coarse credit assignment reinforces or penalizes entire responses without identifying which local decisions to preserve, reinforce, or revise. Conversely, evidence-conditioned self-distillation provides denser token-level supervision, yet teacher imitation can transfer stylistic artifacts and miscalibrated confidence that destabilize training when misaligned with task success.
@@ -39,30 +41,12 @@ Figures are rendered directly from the vector artwork in [paper v2](https://arxi
 <details>
 <summary>Usage guide</summary>
 
-- [Implementation and verification status](#implementation-and-verification-status)
 - [Quickstart](#quickstart)
 - [Paper configurations](#paper-configurations)
 - [Repository map](#repository-map)
 - [Citation and license](#citation-and-license)
 
 </details>
-
-## Implementation and verification status
-
-The native veRL launcher is the training interface. This revision uses **same-group
-rollout evidence**, excluding the target itself. It never falls back to a dataset
-solution or ground-truth text. Ground truth is available only to the verifier.
-The selected response is evidence text; `q+` is the Teacher distribution obtained
-by replaying the *target's* prefix with that evidence. Reference and `q0` use
-no evidence; with an EMA Teacher this implementation uses its moving shadow for
-both branches, while keeping the reference loss independent of evidence gating.
-
-The `pipeline/trl/` entry is a **synthetic loss smoke**, not a pretrained-model TRL
-training backend. It uses artificial tokens and a tiny model. Torch is optional
-for lightweight contract checks and is not installed by the default CI.
-
-CPU checks do not establish GPU training success or reproduction of paper scores.
-See [verification](docs/verification.md) for executed checks and explicit gaps.
 
 ## Quickstart
 
