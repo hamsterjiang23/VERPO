@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "verpo-zpd"
 version = "0.1.0"
-description = "Portable VERPO-ZPD training with native veRL and JSONL TRL backends."
+description = "VERPO native veRL training and optional synthetic loss smoke."
 requires-python = ">=3.10"
 dependencies = ["pyyaml>=6.0"]
 

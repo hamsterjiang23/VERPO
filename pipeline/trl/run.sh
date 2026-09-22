@@ -4,6 +4,9 @@ set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 ROOT=$(cd "$SCRIPT_DIR/../.." && pwd)
 PYTHON_BIN=${VERPO_TRL_PYTHON:-${PYTHON_BIN:-python}}
+if [[ -z "${VERPO_TRL_PYTHON:-}" && -x "$ROOT/.venv/bin/python" ]]; then
+  PYTHON_BIN="$ROOT/.venv/bin/python"
+fi
 TRAIN_FILE=""
 OUTPUT_DIR="${OUTPUT_DIR:-$ROOT/outputs/trl_verpo}"
 CONFIG=""
@@ -25,7 +28,8 @@ done
 [[ -n "$TRAIN_FILE" ]] || { echo "--train-file is required" >&2; exit 2; }
 [[ "$TRAIN_FILE" != *.parquet ]] || { echo "TRL accepts JSONL/math-text only; Parquet belongs to native veRL" >&2; exit 2; }
 export PYTHONPATH="$ROOT${PYTHONPATH:+:$PYTHONPATH}"
-ARGS=("$ROOT/risk_aware_opsd/train_trl_verpo.py" --train-file "$TRAIN_FILE" --output-dir "$OUTPUT_DIR" --max-steps "$MAX_STEPS")
+cd "$ROOT"
+ARGS=(-m risk_aware_opsd.train_trl_verpo --train-file "$TRAIN_FILE" --output-dir "$OUTPUT_DIR" --max-steps "$MAX_STEPS")
 [[ -n "$CONFIG" ]] && ARGS+=(--config "$CONFIG")
 [[ "$LIMIT" != 0 ]] && ARGS+=(--limit "$LIMIT")
 exec "$PYTHON_BIN" "${ARGS[@]}"

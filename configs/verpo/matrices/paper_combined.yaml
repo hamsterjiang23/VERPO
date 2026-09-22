@@ -1,0 +1,44 @@
+schema_version: 1
+kind: matrix
+id: paper_combined
+protocols:
+  - sdpo_section3_biology
+  - sdpo_section3_chemistry
+  - sdpo_section3_material
+  - sdpo_section3_physics
+  - sdpo_section3_tooluse
+teachers:
+  - ema_095
+arms:
+  - fec_advmod_fkl_combined
+overrides:
+  - protocol.total_training_steps=200
+  - protocol.save_frequency=50
+  - protocol.validation_frequency=5
+  - method.evidence_source=rollout_group
+cells:
+  - identifier: sdpo_section3_biology__ema_095__fec_advmod_fkl_combined
+    protocol: sdpo_section3_biology
+    teacher: ema_095
+    arm: fec_advmod_fkl_combined
+    overrides: [method.lambda_evi=1.0]
+  - identifier: sdpo_section3_chemistry__ema_095__fec_advmod_fkl_combined
+    protocol: sdpo_section3_chemistry
+    teacher: ema_095
+    arm: fec_advmod_fkl_combined
+    overrides: [method.lambda_evi=1.0]
+  - identifier: sdpo_section3_material__ema_095__fec_advmod_fkl_combined
+    protocol: sdpo_section3_material
+    teacher: ema_095
+    arm: fec_advmod_fkl_combined
+    overrides: [method.lambda_evi=1.0]
+  - identifier: sdpo_section3_physics__ema_095__fec_advmod_fkl_combined
+    protocol: sdpo_section3_physics
+    teacher: ema_095
+    arm: fec_advmod_fkl_combined
+    overrides: [method.lambda_evi=1.0]
+  - identifier: sdpo_section3_tooluse__ema_095__fec_advmod_fkl_combined
+    protocol: sdpo_section3_tooluse
+    teacher: ema_095
+    arm: fec_advmod_fkl_combined
+    overrides: [method.lambda_evi=1.0]

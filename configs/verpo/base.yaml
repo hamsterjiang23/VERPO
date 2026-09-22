@@ -54,6 +54,9 @@ config:
     rollout_temperature: 1.0
     rollout_top_p: 1.0
     rollout_top_k: -1
+    normalize_advantage_by_std: false
+    clip_ratio_high: 0.28
+    filter_groups_enabled: false
     validation_temperature: 0.6
     validation_top_p: 0.95
     validation_top_k: -1
@@ -61,6 +64,7 @@ config:
     total_training_steps: 1
     save_frequency: 1
     validation_frequency: 1
+    seed: 42
     logging_frequency: 1
     validation_before_training: false
     learning_rate: 1.0e-6
@@ -71,6 +75,7 @@ config:
     ppo_epochs: 1
     swanlab_project: verpo-zpd
   method:
+    evidence_source: rollout_group
     objective: verpo
     actor_loss_mode: verpo_zpd
     divergence: forward_kl

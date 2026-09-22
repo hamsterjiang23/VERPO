@@ -13,7 +13,7 @@ config:
     trust_remote_code: true
   protocol:
     dataset_id: material
-    train_file: data/SDPO/verl/material.train.annotated.parquet
+    train_file: data/SDPO/verl/material.train.parquet
     validation_file: data/SDPO/verl/material.test.parquet
     train_max_samples: 841
     global_prompt_batch: 32
@@ -65,3 +65,8 @@ config:
     temperature: 1.0
     vocab_mode: topk_truncated
     top_k: 128
+  reward:
+    correct_reward: 1.0
+    valid_wrong_reward: 0.0
+    format_invalid_reward: 0.0
+    length_aware_enabled: false

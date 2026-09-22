@@ -1,0 +1,46 @@
+{
+  "source_repository": "lasgroup/SDPO",
+  "source_revision": "7c457fc1b1f636ae794eb0362ba37d4743b06fbc",
+  "files": {
+    "datasets/sciknoweval/biology/train.json": {
+      "sha256": "7ffbfe4a85c7386e2ca78abd3de82c84d339ecbf0beb9bff93f3e599ac6298f2",
+      "rows": 450
+    },
+    "datasets/sciknoweval/biology/test.json": {
+      "sha256": "0ffe8df8f33154ca6af90c75b278f8602d75376db79e295e16a29fc9a5da325a",
+      "rows": 50
+    },
+    "datasets/sciknoweval/chemistry/train.json": {
+      "sha256": "dc841dc92a16a6af3944336ecd887e80907bc9244f2bd51cd2e3869959a84029",
+      "rows": 1890
+    },
+    "datasets/sciknoweval/chemistry/test.json": {
+      "sha256": "772adb9f2bdb1bbc2a542f350b55a1b23091fa98e793f5e24c5dba410ce299bf",
+      "rows": 210
+    },
+    "datasets/sciknoweval/material/train.json": {
+      "sha256": "7da3afdc3194ae575e4e28f331fbc5f402dee7f2446f8294f15f619c509e111f",
+      "rows": 841
+    },
+    "datasets/sciknoweval/material/test.json": {
+      "sha256": "2b3d7e3bcebda39ba47856ea5aae5ebcd0b3ba43b1e750cd4b02e40056b079cf",
+      "rows": 94
+    },
+    "datasets/sciknoweval/physics/train.json": {
+      "sha256": "3c16e829ceb9c580a58b6cb46fe841d5c5d05608f89b738b5c4eadf90cd78bc7",
+      "rows": 720
+    },
+    "datasets/sciknoweval/physics/test.json": {
+      "sha256": "fde88cd10e4192115d550000a8b5b8b714aa8a2651abba499b1f8b8e6f72c1d3",
+      "rows": 80
+    },
+    "datasets/tooluse/train.json": {
+      "sha256": "4ebd3bc53cd0fbfa4169bd97dd5a158d6c4b4568e61373621e5d67f9d10e8c4c",
+      "rows": 4046
+    },
+    "datasets/tooluse/test.json": {
+      "sha256": "947dbf5d93a79448dbf41f00c6701402e5f2c8324936e89ed5623c553675e438",
+      "rows": 68
+    }
+  }
+}

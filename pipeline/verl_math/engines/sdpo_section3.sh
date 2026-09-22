@@ -25,7 +25,7 @@ MODEL_REVISION=${VERPO_MODEL_REVISION:-70d244cc86ccca08cf5af4e1e306ecf908b1ad5e}
 MODEL_TRUST_REMOTE_CODE=${VERPO_MODEL_TRUST_REMOTE_CODE:-true}
 CHAT_TEMPLATE_THINKING_CONTROL=${VERPO_CHAT_TEMPLATE_THINKING_CONTROL:-enable_thinking}
 PROMPT_TEMPLATE_VERSION=${VERPO_PROMPT_TEMPLATE_VERSION:-sdpo_official_qwen3_no_thinking_v1}
-MODEL_PATH=${MODEL_PATH:-}
+MODEL_PATH=${MODEL_PATH:-$MODEL_REPO}
 MODEL_CACHE=${MODEL_CACHE:-"${HF_HOME:-$ROOT/.cache/huggingface}"}
 TRAIN_FILE=${TRAIN_FILE:-}
 VAL_FILE=${VAL_FILE:-}
@@ -35,7 +35,7 @@ if [[ -n "$TRAIN_FILE" ]]; then
 fi
 SDPO_DATA_DIR=${SDPO_DATA_DIR:-$DEFAULT_SDPO_DATA_DIR}
 SDPO_AUTO_DOWNLOAD=${SDPO_AUTO_DOWNLOAD:-true}
-SDPO_DATA_VERSION=${SDPO_DATA_VERSION:-sdpo_privileged_context_v1}
+SDPO_DATA_VERSION=${SDPO_DATA_VERSION:-sdpo_rollout_group_v1}
 VENV_DIR=${VENV_DIR:-"$ROOT/.venvs/qwen3-1.7b-verpo-zpd"}
 BOOTSTRAP_PYTHON=${BOOTSTRAP_PYTHON:-python3}
 PYTHON_BIN="$VENV_DIR/bin/python"
@@ -173,156 +173,16 @@ case "$SDPO_AUTO_DOWNLOAD" in
   *) echo "SDPO_AUTO_DOWNLOAD must be true or false" >&2; exit 2 ;;
 esac
 
-case "$MODEL_ID" in
-  qwen3_1_7b)
-    require_equal MODEL_REPO "$MODEL_REPO" Qwen/Qwen3-1.7B
-    require_equal MODEL_REVISION "$MODEL_REVISION" 70d244cc86ccca08cf5af4e1e306ecf908b1ad5e
-    ;;
-  qwen3_4b)
-    require_equal MODEL_REPO "$MODEL_REPO" Qwen/Qwen3-4B
-    require_equal MODEL_REVISION "$MODEL_REVISION" 1cfa9a7208912126459214e8b04321603b3df60c
-    ;;
-  qwen3_8b)
-    require_equal MODEL_REPO "$MODEL_REPO" Qwen/Qwen3-8B
-    require_equal MODEL_REVISION "$MODEL_REVISION" b968826d9c46dd6066d109eabc6255188de91218
-    ;;
-  llama3_2_1b_instruct)
-    require_equal MODEL_REPO "$MODEL_REPO" meta-llama/Llama-3.2-1B-Instruct
-    require_equal MODEL_REVISION "$MODEL_REVISION" 9213176726f574b556790deb65791e0c5aa438b6
-    ;;
-  llama3_2_3b_instruct)
-    require_equal MODEL_REPO "$MODEL_REPO" meta-llama/Llama-3.2-3B-Instruct
-    require_equal MODEL_REVISION "$MODEL_REVISION" 0cb88a4f764b7a12671c53f0838cd831a0843b95
-    ;;
-  *)
-    echo "SDPO Section 3 does not support model: $MODEL_ID" >&2
-    exit 2
-    ;;
-esac
-
-case "$CHAT_TEMPLATE_THINKING_CONTROL" in
-  enable_thinking|none) ;;
-  *) echo "Unsupported chat-template thinking control: $CHAT_TEMPLATE_THINKING_CONTROL" >&2; exit 2 ;;
-esac
-
-# Paper Section 3 formal locks. Explicit --set overrides are exploratory and
-# remain runnable under a distinct semantic config hash.
-if [[ "${VERPO_CONFIG_STATUS:-formal}" == formal ]]; then
+# Semantic values are validated by the public resolver. Validate execution
+# invariants here too; historical hard-coded defaults are not the contract.
 require_equal GPUS "$GPUS" "$EXPECTED_GPUS"
-require_equal GLOBAL_BATCH "$GLOBAL_BATCH" 32
 require_equal PER_DEVICE_BATCH "$PER_DEVICE_BATCH" "$((GLOBAL_BATCH / GPUS))"
-require_equal NUM_EPOCHS "$NUM_EPOCHS" 30
-require_equal GPU_TYPE "$GPU_TYPE" "$EXPECTED_GPU_NAME"
-require_equal ROLLOUT_N "$ROLLOUT_N" 8
-require_equal MINI_BATCH_TRAJECTORIES "$MINI_BATCH_TRAJECTORIES" 32
-require_equal PPO_MINI_BATCH_SIZE "$PPO_MINI_BATCH_SIZE" 4
-require_equal MAX_PROMPT_LENGTH "$MAX_PROMPT_LENGTH" 2048
-require_equal MAX_RESPONSE_LENGTH "$MAX_RESPONSE_LENGTH" 8192
-require_equal VAL_RESPONSE_LENGTH "$VAL_RESPONSE_LENGTH" 8192
-require_equal MAX_MODEL_LEN "$MAX_MODEL_LEN" 18944
-require_equal MAX_REPROMPT_LENGTH "$MAX_REPROMPT_LENGTH" 10240
-require_equal VAL_N "$VAL_N" 16
-require_equal VAL_TEMPERATURE "$VAL_TEMPERATURE" 0.6
-require_equal VAL_TOP_P "$VAL_TOP_P" 0.95
-require_equal ROLLOUT_TEMPERATURE "$ROLLOUT_TEMPERATURE" 1.0
-require_equal NORMALIZE_ADVANTAGE_BY_STD "$NORMALIZE_ADVANTAGE_BY_STD" false
-require_equal CLIP_RATIO_HIGH "$CLIP_RATIO_HIGH" 0.28
-require_equal MODEL_TRUST_REMOTE_CODE "$MODEL_TRUST_REMOTE_CODE" true
-if [[ "$TRAINING_OBJECTIVE" == srpo || ( "$TRAINING_OBJECTIVE" == pure_grpo && "$PAPER_BASELINE_PROMPT_PROFILE" == srpo_v1 ) ]]; then
-  require_numeric_equal LEARNING_RATE "$LEARNING_RATE" 5.0e-6
-else
-  require_numeric_equal LEARNING_RATE "$LEARNING_RATE" 1.0e-5
-fi
-require_equal WEIGHT_DECAY "$WEIGHT_DECAY" 0.01
-require_equal WARMUP_STEPS "$WARMUP_STEPS" 10
-require_equal LR_SCHEDULER "$LR_SCHEDULER" constant
-require_equal GRAD_CLIP "$GRAD_CLIP" 1.0
-require_equal PPO_EPOCHS "$PPO_EPOCHS" 1
-require_equal SAVE_FREQ "$SAVE_FREQ" 50
-require_equal TEST_FREQ "$TEST_FREQ" 5
-require_equal TOTAL_TRAINING_STEPS "$TOTAL_TRAINING_STEPS" 300
-require_equal VAL_BEFORE_TRAIN "$VAL_BEFORE_TRAIN" true
-require_equal STUDENT_ENABLE_THINKING "$STUDENT_ENABLE_THINKING" false
-require_equal TEACHER_ENABLE_THINKING "$TEACHER_ENABLE_THINKING" false
-require_equal VALIDATION_ENABLE_THINKING "$VALIDATION_ENABLE_THINKING" false
-case "${VERPO_TEACHER_MODE:-}" in
-  fixed_initial) ;;
-  snapshot)
-    require_equal "VERPO Teacher snapshot interval" "${VERPO_TEACHER_SYNC_INTERVAL:-}" 10
-    ;;
-  ema)
-    require_equal "VERPO Teacher EMA decay" "${VERPO_TEACHER_EMA_DECAY:-}" 0.95
-    ;;
-  *)
-    echo "SDPO Section 3 lock mismatch: unsupported VERPO teacher mode=${VERPO_TEACHER_MODE:-}" >&2
-    exit 2
-    ;;
-esac
-if [[ "$EXPERIMENT_ID" == fkl_fec_wrong_only ]]; then
-  require_equal "wrong-only model" "$MODEL_ID" qwen3_8b
-  require_equal "VERPO evidence scope" "${VERPO_EVIDENCE_ROLLOUT_SCOPE:-}" wrong_only
-else
-  require_equal "VERPO evidence scope" "${VERPO_EVIDENCE_ROLLOUT_SCOPE:-}" all
-fi
-case "${VERPO_ADVANTAGE_MODULATION:-none}" in
-  none)
-    require_numeric_equal "VERPO advantage modulation lambda" \
-      "${VERPO_ADVANTAGE_MODULATION_LAMBDA:-0.0}" 0.0
-    ;;
-  multiplicative_w)
-    case "$EXPERIMENT_ID" in
-      fkl_fec_advmod|fkl_fec_advmod_combined) ;;
-      *)
-        echo "SDPO Section 3 lock mismatch: unsupported advantage modulation arm=$EXPERIMENT_ID" >&2
-        exit 2
-        ;;
-    esac
-    require_equal "VERPO advantage modulation displacement" \
-      "${VERPO_DISPLACEMENT_MODE:-}" fec
-    if [[ "$EXPERIMENT_ID" == fkl_fec_advmod ]]; then
-      require_numeric_equal "VERPO advantage modulation evidence coefficient" \
-        "${VERPO_LAMBDA_EVI:-}" 0.0
-    else
-      require_numeric_equal "VERPO combined advantage modulation evidence coefficient" \
-        "${VERPO_LAMBDA_EVI:-}" 1.0
-    fi
-    require_numeric_equal "VERPO advantage modulation lambda" \
-      "${VERPO_ADVANTAGE_MODULATION_LAMBDA:-}" 1.0
-    ;;
-  *)
-    echo "SDPO Section 3 lock mismatch: unsupported advantage modulation=${VERPO_ADVANTAGE_MODULATION:-}" >&2
-    exit 2
-    ;;
-esac
-require_equal "VERPO vocabulary mode" "${VERPO_VOCAB_MODE:-}" topk_truncated
-require_equal "VERPO Top-K" "${VERPO_TOP_K:-}" 128
-if [[ "$TRAINING_OBJECTIVE" == sdpo || "$TRAINING_OBJECTIVE" == srpo ]]; then
-  require_equal PAPER_BASELINE_ENABLED "$PAPER_BASELINE_ENABLED" true
-  require_equal PAPER_BASELINE_DIVERGENCE "$PAPER_BASELINE_DIVERGENCE" jsd
-  require_equal PAPER_BASELINE_JSD_ALPHA "$PAPER_BASELINE_JSD_ALPHA" 0.5
-  require_equal PAPER_BASELINE_TOP_K "$PAPER_BASELINE_TOP_K" 100
-  require_equal PAPER_BASELINE_ADD_TAIL "$PAPER_BASELINE_ADD_TAIL" true
-  require_equal PAPER_BASELINE_SUCCESS_THRESHOLD "$PAPER_BASELINE_SUCCESS_THRESHOLD" 0.5
-  require_equal PAPER_BASELINE_EMA_DECAY "$PAPER_BASELINE_EMA_DECAY" 0.95
-  require_equal PAPER_BASELINE_TEMPERATURE "$PAPER_BASELINE_TEMPERATURE" 1.0
-  require_equal PAPER_BASELINE_IS_CLIP "$PAPER_BASELINE_IS_CLIP" 2.0
-  require_equal PAPER_BASELINE_ENTROPY_BETA "$PAPER_BASELINE_ENTROPY_BETA" 1.0
-  require_equal PAPER_BASELINE_ENTROPY_SUPPORT "$PAPER_BASELINE_ENTROPY_SUPPORT" full_vocab
-  require_equal PAPER_BASELINE_SIBLING_SELECTION "$PAPER_BASELINE_SIBLING_SELECTION" first_correct
-  require_equal PAPER_BASELINE_REMOVE_THINKING "$PAPER_BASELINE_REMOVE_THINKING" true
-  if [[ "$TRAINING_OBJECTIVE" == sdpo ]]; then
-    require_equal PAPER_BASELINE_PROMPT_PROFILE "$PAPER_BASELINE_PROMPT_PROFILE" sdpo_official_v2
-    require_equal PROMPT_TEMPLATE_VERSION "$PROMPT_TEMPLATE_VERSION" sdpo_official_v2
-  else
-    require_equal PAPER_BASELINE_PROMPT_PROFILE "$PAPER_BASELINE_PROMPT_PROFILE" srpo_v1
-    require_equal PROMPT_TEMPLATE_VERSION "$PROMPT_TEMPLATE_VERSION" srpo_v1
-  fi
-else
-  require_equal PAPER_BASELINE_ENABLED "$PAPER_BASELINE_ENABLED" false
-  if [[ "$TRAINING_OBJECTIVE" == pure_grpo && "$PAPER_BASELINE_PROMPT_PROFILE" == srpo_v1 ]]; then
-    require_equal PROMPT_TEMPLATE_VERSION "$PROMPT_TEMPLATE_VERSION" srpo_v1
-  fi
-fi
+(( TOTAL_TRAINING_STEPS > 0 && MINI_BATCH_TRAJECTORIES > 0 && ROLLOUT_N > 0 )) || { echo "Invalid training budget" >&2; exit 2; }
+(( MINI_BATCH_TRAJECTORIES % ROLLOUT_N == 0 )) || { echo "Invalid minibatch/rollout ratio" >&2; exit 2; }
+case "$CHAT_TEMPLATE_THINKING_CONTROL" in enable_thinking|none) ;; *) exit 2 ;; esac
+if [[ "$TRAINING_OBJECTIVE" == verpo ]]; then
+  require_equal evidence_source "${VERPO_EVIDENCE_SOURCE:-}" rollout_group
+  require_equal sibling_selection "${VERPO_SIBLING_SELECTION_MODE:-}" correctness
 fi
 
 case "$REWARD_MODE" in
@@ -331,38 +191,8 @@ case "$REWARD_MODE" in
   *) echo "Unsupported SDPO Section 3 reward mode: $REWARD_MODE" >&2; exit 2 ;;
 esac
 
-if [[ "${QWEN3_PRINT_RESOLVED_CONFIG:-0}" == 1 ]]; then
-  printf '%s\n' \
-    "engine=sdpo_section3" "experiment_id=$EXPERIMENT_ID" "model_id=$MODEL_ID" "model_repo=$MODEL_REPO" "model_revision=$MODEL_REVISION" \
-    "gpus=$GPUS" "gpu_type=$GPU_TYPE" "rollout_backend=$ROLLOUT_BACKEND" \
-    "global_prompt_batch=$GLOBAL_BATCH" "per_device_prompt_batch=$PER_DEVICE_BATCH" \
-    "rollout_n=$ROLLOUT_N" "effective_mini_batch_trajectories=$MINI_BATCH_TRAJECTORIES" \
-    "native_ppo_mini_batch_size=$PPO_MINI_BATCH_SIZE" "max_prompt_length=$MAX_PROMPT_LENGTH" \
-    "max_response_length=$MAX_RESPONSE_LENGTH" "max_model_len=$MAX_MODEL_LEN" \
-    "max_reprompt_length=$MAX_REPROMPT_LENGTH" "normalize_advantage_by_std=$NORMALIZE_ADVANTAGE_BY_STD" \
-    "clip_ratio_high=$CLIP_RATIO_HIGH" \
-    "chat_template_thinking_control=$CHAT_TEMPLATE_THINKING_CONTROL" \
-    "prompt_template_version=$PROMPT_TEMPLATE_VERSION" \
-    "student_enable_thinking=$STUDENT_ENABLE_THINKING" "teacher_enable_thinking=$TEACHER_ENABLE_THINKING" \
-    "validation_enable_thinking=$VALIDATION_ENABLE_THINKING" "teacher_mode=${VERPO_TEACHER_MODE:-}" \
-    "teacher_ema_decay=${VERPO_TEACHER_EMA_DECAY:-}" "reward_mode=$REWARD_MODE" \
-    "verpo_vocab_mode=${VERPO_VOCAB_MODE:-}" "verpo_top_k=${VERPO_TOP_K:-}" \
-    "verpo_cost_alpha=${VERPO_COST_ALPHA:-}" "verpo_cost_epsilon=${VERPO_COST_EPSILON:-}" \
-    "paper_baseline_enabled=$PAPER_BASELINE_ENABLED" \
-    "paper_baseline_objective=$PAPER_BASELINE_OBJECTIVE" \
-    "paper_baseline_divergence=$PAPER_BASELINE_DIVERGENCE" \
-    "paper_baseline_top_k=$PAPER_BASELINE_TOP_K" \
-    "paper_baseline_prompt_profile=$PAPER_BASELINE_PROMPT_PROFILE" \
-    "objective=$TRAINING_OBJECTIVE" "divergence=$VERPO_DIVERGENCE" \
-    "displacement=$VERPO_DISPLACEMENT_MODE" "train_file=$TRAIN_FILE" "val_file=$VAL_FILE" \
-    "expected_validation_data_source=$EXPECTED_VALIDATION_DATA_SOURCE" \
-    "sdpo_auto_download=$SDPO_AUTO_DOWNLOAD" "sdpo_data_dir=$SDPO_DATA_DIR" \
-    "sdpo_data_version=$SDPO_DATA_VERSION" "sdpo_download_source=public_google_drive" \
-    "swanlab_project=$SWANLAB_PROJECT" "swanlab_mode=$SWANLAB_MODE" \
-    "save_frequency=$SAVE_FREQ" "save_training_rollouts=$SAVE_TRAINING_ROLLOUTS"
-  exit 0
-fi
-
+PRINT_ONLY=${QWEN3_PRINT_RESOLVED_CONFIG:-0}
+if [[ "$PRINT_ONLY" != 1 ]]; then
 if [[ -z "${SWANLAB_API_KEY:-}" ]]; then
   echo "SWANLAB_API_KEY is required for SDPO training" >&2
   exit 2
@@ -374,20 +204,6 @@ if [[ ! -x "$PYTHON_BIN" ]]; then
   exit 2
 fi
 
-if [[ "$SDPO_AUTO_DOWNLOAD" == true ]]; then
-  SDPO_SYNC_PYTHON="$PYTHON_BIN" \
-  SDPO_DATA_DIR="$SDPO_DATA_DIR" \
-  SDPO_DATA_VERSION="$SDPO_DATA_VERSION" \
-    "$ROOT/scripts/sync_sdpo_google_drive.sh"
-else
-  "$PYTHON_BIN" "$ROOT/scripts/package_sdpo_training_data.py" verify \
-    --data-dir "$SDPO_DATA_DIR" \
-    --manifest "$SDPO_DATA_DIR/bundle_manifest.json" \
-    --expected-version "$SDPO_DATA_VERSION" >/dev/null
-fi
-
-[[ -f "$TRAIN_FILE" ]] || { echo "Missing annotated SDPO train parquet: $TRAIN_FILE" >&2; exit 2; }
-[[ -f "$VAL_FILE" ]] || { echo "Missing processed SDPO test parquet: $VAL_FILE" >&2; exit 2; }
 command -v nvidia-smi >/dev/null 2>&1 || { echo "nvidia-smi is required" >&2; exit 2; }
 mapfile -t GPU_ROWS < <(nvidia-smi --query-gpu=name,memory.total --format=csv,noheader,nounits)
 require_equal detected_gpu_count "${#GPU_ROWS[@]}" "$GPUS"
@@ -412,12 +228,20 @@ export ROLLOUT_BACKEND
 source "$SCRIPT_DIR/setup_env.sh"
 export PYTHONPATH="$ROOT/verl:$ROOT${PYTHONPATH:+:$PYTHONPATH}"
 
+if [[ "$SDPO_AUTO_DOWNLOAD" == true ]]; then
+  "$PYTHON_BIN" -m scripts.prepare_sdpo_data --data-dir "$SDPO_DATA_DIR"
+fi
+
+[[ -f "$TRAIN_FILE" ]] || { echo "Missing annotated SDPO train parquet: $TRAIN_FILE" >&2; exit 2; }
+[[ -f "$VAL_FILE" ]] || { echo "Missing processed SDPO test parquet: $VAL_FILE" >&2; exit 2; }
+
+
 MODEL_ARGS=(
   --repo-id "$MODEL_REPO"
   --revision "$MODEL_REVISION"
   --cache-dir "$MODEL_CACHE"
 )
-if [[ -n "$MODEL_PATH" ]]; then
+if [[ "$MODEL_PATH" != "$MODEL_REPO" ]]; then
   MODEL_ARGS+=(--model-path "$MODEL_PATH")
 fi
 MODEL_PATH=$("$PYTHON_BIN" "$ROOT/scripts/prepare_sdpo_model.py" "${MODEL_ARGS[@]}")
@@ -426,16 +250,21 @@ MODEL_PATH=$("$PYTHON_BIN" "$ROOT/scripts/prepare_sdpo_model.py" "${MODEL_ARGS[@
   exit 2
 }
 
+fi  # environment/data/model preparation; dry-run never enters this block
 RUN_ROOT="$OUTPUT_ROOT/formal"
-mkdir -p "$RUN_ROOT/provenance" "$RUN_ROOT/checkpoints" "$RUN_ROOT/rollouts" "$RUN_ROOT/validation" "$RUN_ROOT/hydra"
+if [[ "$PRINT_ONLY" != 1 ]]; then
+  "$PYTHON_BIN" -m scripts.check_runtime_identity --run-root "$RUN_ROOT" \
+    --train "$TRAIN_FILE" --validation "$VAL_FILE" --model "$MODEL_PATH" --revision "$MODEL_REVISION"
+  mkdir -p "$RUN_ROOT/provenance" "$RUN_ROOT/checkpoints" "$RUN_ROOT/rollouts" "$RUN_ROOT/validation" "$RUN_ROOT/hydra"
+fi
 REWARD_FILE="$ROOT/risk_aware_opsd/sdpo_verl_reward.py"
 LOGGER='["console","swanlab"]'
 CHAT_TEMPLATE_ARGS=()
 if [[ "$CHAT_TEMPLATE_THINKING_CONTROL" == enable_thinking ]]; then
   CHAT_TEMPLATE_ARGS+=(
-    +data.apply_chat_template_kwargs.enable_thinking=false
-    +data.val_apply_chat_template_kwargs.enable_thinking=false
-    +actor_rollout_ref.rollout.custom.teacher_chat_template_kwargs.enable_thinking=false
+    +data.apply_chat_template_kwargs.enable_thinking="$STUDENT_ENABLE_THINKING"
+    +data.val_apply_chat_template_kwargs.enable_thinking="$VALIDATION_ENABLE_THINKING"
+    +actor_rollout_ref.rollout.custom.teacher_chat_template_kwargs.enable_thinking="$TEACHER_ENABLE_THINKING"
   )
 fi
 
@@ -448,7 +277,7 @@ ARGS=(
   algorithm.rollout_correction.rollout_is=token
   algorithm.rollout_correction.rollout_is_threshold="$ROLLOUT_IMPORTANCE_CLIP"
   algorithm.rollout_correction.rollout_is_batch_normalize=false
-  +algorithm.filter_groups.enable=false
+  +algorithm.filter_groups.enable="${VERPO_FILTER_GROUPS_ENABLED:-false}"
   data.train_files="$TRAIN_FILE"
   data.val_files="$VAL_FILE"
   data.train_batch_size="$GLOBAL_BATCH"
@@ -471,9 +300,9 @@ ARGS=(
   reward.reward_manager.name=naive
   actor_rollout_ref.model.path="$MODEL_PATH"
   actor_rollout_ref.model.trust_remote_code="$MODEL_TRUST_REMOTE_CODE"
-  actor_rollout_ref.model.lora_rank=0
-  actor_rollout_ref.model.lora_alpha=128
-  actor_rollout_ref.model.target_modules=all-linear
+  actor_rollout_ref.model.lora_rank="${VERPO_LORA_RANK:-0}"
+  actor_rollout_ref.model.lora_alpha="${VERPO_LORA_ALPHA:-128}"
+  actor_rollout_ref.model.target_modules="${VERPO_TARGET_MODULES:-all-linear}"
   actor_rollout_ref.model.lora.merge=false
   actor_rollout_ref.model.use_remove_padding=true
   actor_rollout_ref.model.enable_gradient_checkpointing=true
@@ -489,7 +318,7 @@ ARGS=(
   actor_rollout_ref.actor.ppo_epochs="$PPO_EPOCHS"
   actor_rollout_ref.actor.clip_ratio_high="$CLIP_RATIO_HIGH"
   actor_rollout_ref.actor.shuffle="$ACTOR_SHUFFLE"
-  actor_rollout_ref.actor.data_loader_seed=42
+  actor_rollout_ref.actor.data_loader_seed="$DATA_SEED"
   actor_rollout_ref.actor.policy_loss.loss_mode=vanilla
   actor_rollout_ref.actor.use_dynamic_bsz=false
   actor_rollout_ref.actor.ppo_max_token_len_per_gpu="$MAX_MODEL_LEN"
@@ -500,6 +329,7 @@ ARGS=(
   actor_rollout_ref.actor.fsdp_config.full_determinism=false
   actor_rollout_ref.actor.fsdp_config.param_offload=false
   actor_rollout_ref.actor.fsdp_config.optimizer_offload=false
+  ++actor_rollout_ref.actor.verpo.evidence_source="${VERPO_EVIDENCE_SOURCE:-rollout_group}"
   actor_rollout_ref.actor.verpo.enabled="$VERPO_ENABLED"
   actor_rollout_ref.actor.verpo.teacher_mode="${VERPO_TEACHER_MODE:-ema}"
   actor_rollout_ref.actor.verpo.teacher_sync_interval="${VERPO_TEACHER_SYNC_INTERVAL:-10}"
@@ -561,7 +391,7 @@ ARGS=(
   actor_rollout_ref.rollout.enable_prefix_caching=true
   actor_rollout_ref.rollout.free_cache_engine="$ROLLOUT_FREE_CACHE_ENGINE"
   actor_rollout_ref.rollout.layered_summon=true
-  actor_rollout_ref.rollout.seed=42
+  actor_rollout_ref.rollout.seed="${VERPO_SEED:-42}"
   actor_rollout_ref.rollout.calculate_log_probs=true
   actor_rollout_ref.rollout.log_prob_use_dynamic_bsz=false
   actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu="$ACTOR_MICRO_BATCH_PER_GPU"
@@ -569,7 +399,6 @@ ARGS=(
   actor_rollout_ref.rollout.max_model_len="$MAX_MODEL_LEN"
   actor_rollout_ref.rollout.max_num_batched_tokens="$MAX_MODEL_LEN"
   +actor_rollout_ref.rollout.custom.val_response_length="$VAL_RESPONSE_LENGTH"
-  +actor_rollout_ref.rollout.custom.privileged_text_mode=solution_answer
   +actor_rollout_ref.rollout.custom.thinking_system_prompt=false
   +actor_rollout_ref.rollout.custom.teacher_wrapper_variant=neutral
   actor_rollout_ref.rollout.val_kwargs.n="$VAL_N"
@@ -592,6 +421,8 @@ ARGS=(
   +trainer.logging_freq="$LOGGING_FREQ"
   trainer.total_epochs="$NUM_EPOCHS"
   trainer.save_freq="$SAVE_FREQ"
+  trainer.max_actor_ckpt_to_keep=null
+  trainer.max_critic_ckpt_to_keep=null
   trainer.test_freq="$TEST_FREQ"
   trainer.logger="$LOGGER"
   trainer.project_name="$SWANLAB_PROJECT"
@@ -619,6 +450,11 @@ fi
 
 if (( TOTAL_TRAINING_STEPS > 0 )); then
   ARGS+=(trainer.total_training_steps="$TOTAL_TRAINING_STEPS")
+fi
+
+if [[ "$PRINT_ONLY" == 1 ]]; then
+  printf '%s\n' '# hydra_arguments' "${ARGS[@]}"
+  exit 0
 fi
 
 printf '%q ' "$PYTHON_BIN" -m verl.trainer.main_ppo "${ARGS[@]}" > "$RUN_ROOT/provenance/resolved_command.sh"

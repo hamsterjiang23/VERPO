@@ -650,6 +650,9 @@ class TrainingWorker(Worker, DistProfilerExtension):
                     )
                 )
                 if self.engine.is_mp_src_rank_with_outputs():
+                    output["metrics"]["verpo/optimizer_updates_max"] = [
+                        float(actor_teacher.optimizer_update_count)
+                    ]
                     output["metrics"]["verpo/teacher_update_count"] = [
                         float(actor_teacher.optimizer_update_count)
                     ]

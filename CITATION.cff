@@ -1,0 +1,60 @@
+cff-version: 1.2.0
+message: "Please cite the VERPO paper when using this software."
+type: software
+title: "VERPO"
+version: 0.1.0
+license: Apache-2.0
+repository-code: https://github.com/hamsterjiang23/VERPO
+authors:
+  - given-names: Haijiang
+    family-names: Li
+  - given-names: Chengyu
+    family-names: Lv
+  - given-names: Yi
+    family-names: Zhang
+  - given-names: Rui
+    family-names: Qian
+  - given-names: Zhibing
+    family-names: Zhang
+  - given-names: Xiangqing
+    family-names: Shen
+  - given-names: Junjie
+    family-names: Yang
+  - given-names: Yuchen
+    family-names: Zhang
+  - given-names: Wenyuan
+    family-names: Jiang
+  - given-names: Hanqing
+    family-names: Hu
+  - given-names: Cangqi
+    family-names: Zhou
+preferred-citation:
+  type: article
+  title: "VERPO: Verified Evidence Regularized Policy Optimization"
+  journal: arXiv
+  year: 2026
+  doi: 10.48550/arXiv.2609.06100
+  url: https://arxiv.org/abs/2609.06100v2
+  authors:
+    - given-names: Haijiang
+      family-names: Li
+    - given-names: Chengyu
+      family-names: Lv
+    - given-names: Yi
+      family-names: Zhang
+    - given-names: Rui
+      family-names: Qian
+    - given-names: Zhibing
+      family-names: Zhang
+    - given-names: Xiangqing
+      family-names: Shen
+    - given-names: Junjie
+      family-names: Yang
+    - given-names: Yuchen
+      family-names: Zhang
+    - given-names: Wenyuan
+      family-names: Jiang
+    - given-names: Hanqing
+      family-names: Hu
+    - given-names: Cangqi
+      family-names: Zhou

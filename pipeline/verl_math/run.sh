@@ -40,13 +40,6 @@ for ((index = 0; index < ${#arguments[@]}; index++)); do
   esac
 done
 
-if [[ "$EVIDENCE_SCOPE_EXPLICIT" == false ]]; then
-  case "$MODEL_ARG" in
-    llama3_2_*) arguments+=(--set zpd.evidence_scope=all) ;;
-    qwen3_*) arguments+=(--set zpd.evidence_scope=all) ;;
-  esac
-fi
-
 if [[ -n "$PROTOCOL" && "$PROTOCOL" != sdpo_section3_* ]]; then
   echo "Only SDPO Section 3 training is active; protocol '$PROTOCOL' is deprecated or unsupported" >&2
   exit 2
@@ -72,4 +65,4 @@ else
 fi
 
 export PYTHONPATH="$ROOT${PYTHONPATH:+:$PYTHONPATH}"
-exec "$PYTHON_BIN" "$ROOT/scripts/launch_verpo_verl.py" "$@"
+exec "$PYTHON_BIN" "$ROOT/scripts/launch_verpo_verl.py" "${arguments[@]}"

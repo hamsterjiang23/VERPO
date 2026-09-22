@@ -56,7 +56,6 @@ from verl.trainer.baselines.paper_batch import (
 )
 from verl.trainer.distillation.verpo_protocol import (
     build_contrastive_evidence_teacher_fields,
-    build_evidence_teacher_fields,
 )
 from verl.trainer.distillation.verpo_zpd import (
     apply_evidence_rollout_scope,
@@ -2025,11 +2024,8 @@ class PPOTrainer(ABC):
         verpo = self.config.actor_rollout_ref.actor.verpo
         custom = self.config.actor_rollout_ref.rollout.custom or {}
         displacement_mode = str(verpo.displacement_mode)
-        if displacement_mode == "evidence_vs_none":
-            if custom.get("privileged_text_mode") != "solution_answer":
-                raise ValueError("VERPO fixed-evidence protocol requires privileged_text_mode=solution_answer")
-            if custom.get("teacher_wrapper_variant") != "neutral":
-                raise ValueError("VERPO fixed-evidence protocol requires teacher_wrapper_variant=neutral")
+        if str(verpo.evidence_source) != "rollout_group":
+            raise ValueError("public VERPO requires evidence_source=rollout_group")
         if bool(custom.get("thinking_system_prompt", False)):
             raise ValueError("The VERPO_CONTRASTIVE protocol requires thinking_system_prompt=false")
         teacher_chat_template_kwargs = dict(custom.get("teacher_chat_template_kwargs", {}) or {})
@@ -2075,10 +2071,7 @@ class PPOTrainer(ABC):
         evidence_rollout_scope = str(verpo.evidence_rollout_scope)
         require_independent_acc = (
             (bool(verpo.group_zpd_enabled) and group_zpd_mode == "binary_mixed")
-            or (
-                displacement_mode != "evidence_vs_none"
-                and sibling_selection_mode == "correctness"
-            )
+            or (sibling_selection_mode == "correctness")
             or evidence_rollout_scope == "wrong_only"
         )
         outcome_positive = _resolve_verpo_outcome_positive(
@@ -2087,11 +2080,7 @@ class PPOTrainer(ABC):
             require_independent_acc=require_independent_acc,
         )
         if bool(verpo.group_zpd_enabled):
-            group_gate_values = (
-                outcome_positive.float()
-                if group_zpd_mode == "binary_mixed"
-                else rewards
-            )
+            group_gate_values = outcome_positive.float() if group_zpd_mode == "binary_mixed" else rewards
             raw_group_gate = compute_group_zpd_gate_by_uid(
                 group_gate_values,
                 uids,
@@ -2100,36 +2089,54 @@ class PPOTrainer(ABC):
             )
         else:
             raw_group_gate = torch.ones_like(rewards, dtype=torch.bool)
-        if displacement_mode == "evidence_vs_none":
-            teacher_fields = build_evidence_teacher_fields(
-                tokenizer=self.tokenizer,
-                responses=data["responses"],
-                raw_prompts=data["raw_prompt"],
-                reward_models=data["reward_model"],
-                extra_infos=data["extra_info"],
-                total_token_budget=int(verpo.teacher_max_token_len_per_gpu),
-                max_reprompt_tokens=int(verpo.teacher_max_reprompt_len),
-                chat_template_kwargs=teacher_chat_template_kwargs,
-            )
-            contrastive_available = torch.ones_like(raw_group_gate)
-        else:
-            teacher_fields = build_contrastive_evidence_teacher_fields(
-                tokenizer=self.tokenizer,
-                responses=data["responses"],
-                raw_prompts=data["raw_prompt"],
-                rewards=rewards,
-                correctness=outcome_positive,
-                uids=uids,
-                total_token_budget=int(verpo.teacher_max_token_len_per_gpu),
-                max_reprompt_tokens=int(verpo.teacher_max_reprompt_len),
-                reward_models=data["reward_model"],
-                extra_infos=data["extra_info"],
-                num_negative_hints=int(verpo.contrastive_num_negative_hints),
-                selection_mode=sibling_selection_mode,
-                chat_template_kwargs=teacher_chat_template_kwargs,
-                allow_unboxed_candidates=bool(verpo.smoke_allow_unboxed_contrastive),
-            )
-            contrastive_available = teacher_fields["verpo_contrastive_available"]
+        teacher_fields = build_contrastive_evidence_teacher_fields(
+            tokenizer=self.tokenizer,
+            responses=data["responses"],
+            raw_prompts=data["raw_prompt"],
+            rewards=rewards,
+            correctness=outcome_positive,
+            uids=uids,
+            rollout_ids=[str(key) for key in batch.keys],
+            require_negative=displacement_mode != "evidence_vs_none",
+            total_token_budget=int(verpo.teacher_max_token_len_per_gpu),
+            max_reprompt_tokens=int(verpo.teacher_max_reprompt_len),
+            reward_models=data["reward_model"],
+            num_negative_hints=int(verpo.contrastive_num_negative_hints),
+            selection_mode=sibling_selection_mode,
+            chat_template_kwargs=teacher_chat_template_kwargs,
+            allow_unboxed_candidates=bool(verpo.smoke_allow_unboxed_contrastive),
+        )
+        contrastive_available = teacher_fields["verpo_contrastive_available"]
+        audit_root = self.config.trainer.get("rollout_data_dir")
+        if audit_root:
+            from risk_aware_opsd.rollout_evidence import REASONS
+
+            audit_path = Path(audit_root) / "evidence_selection"
+            audit_path.mkdir(parents=True, exist_ok=True)
+            with (audit_path / f"step_{self.global_steps}.jsonl").open("w", encoding="utf-8") as handle:
+                for row, target_id in enumerate(batch.keys):
+                    pos = int(teacher_fields["verpo_positive_sibling_index"][row])
+                    negs = teacher_fields["verpo_negative_sibling_indices"][row].tolist()
+                    selected = [pos] + negs
+                    record = {
+                        "evidence_source": "rollout_group",
+                        "trainer_step": self.global_steps,
+                        "target_id": str(target_id),
+                        "group_id": uids[row],
+                        "target_correct": bool(outcome_positive[row]),
+                        "target_format_valid": bool(teacher_fields["verpo_candidate_format_valid"][row]),
+                        "positive_id": str(batch.keys[pos]) if pos >= 0 else None,
+                        "negative_ids": [str(batch.keys[i]) if i >= 0 else None for i in negs],
+                        "selected_correct": [bool(outcome_positive[i]) if i >= 0 else None for i in selected],
+                        "selected_format_valid": [
+                            bool(teacher_fields["verpo_candidate_format_valid"][i]) if i >= 0 else None
+                            for i in selected
+                        ],
+                        "available": bool(contrastive_available[row]),
+                        "reason": REASONS[int(teacher_fields["verpo_evidence_reason"][row])],
+                        "prompt_truncated_tokens": int(teacher_fields["verpo_teacher_prompt_truncated_tokens"][row]),
+                    }
+                    handle.write(json.dumps(record) + "\n")
         available_group_gate = raw_group_gate & contrastive_available
         evidence_rollout_gate = apply_evidence_rollout_scope(
             available_group_gate,
@@ -2140,23 +2147,13 @@ class PPOTrainer(ABC):
             [int(row.bool().sum().item()) for row in data["response_mask"].unbind()],
             dtype=torch.long,
         )
-        routed_token_count = int(
-            (response_token_counts * evidence_rollout_gate.long()).sum().item()
-        )
-        routed_row_count = int(
-            (evidence_rollout_gate & response_token_counts.gt(0)).sum().item()
-        )
+        routed_token_count = int((response_token_counts * evidence_rollout_gate.long()).sum().item())
+        routed_row_count = int((evidence_rollout_gate & response_token_counts.gt(0)).sum().item())
         fec_correct_token_count = int(
-            (
-                response_token_counts
-                * (evidence_rollout_gate & outcome_positive).long()
-            ).sum().item()
+            (response_token_counts * (evidence_rollout_gate & outcome_positive).long()).sum().item()
         )
         fec_wrong_token_count = int(
-            (
-                response_token_counts
-                * (evidence_rollout_gate & ~outcome_positive).long()
-            ).sum().item()
+            (response_token_counts * (evidence_rollout_gate & ~outcome_positive).long()).sum().item()
         )
 
         def repeated_count(value: int) -> torch.Tensor:
@@ -2167,18 +2164,10 @@ class PPOTrainer(ABC):
         teacher_fields["verpo_contrastive_available"] = contrastive_available
         teacher_fields["verpo_evidence_rollout_gate"] = evidence_rollout_gate
         teacher_fields["verpo_outcome_positive"] = outcome_positive
-        teacher_fields["verpo_evidence_batch_num_tokens"] = repeated_count(
-            routed_token_count
-        )
-        teacher_fields["verpo_evidence_global_batch_size"] = repeated_count(
-            routed_row_count
-        )
-        teacher_fields["verpo_fec_correct_token_count"] = repeated_count(
-            fec_correct_token_count
-        )
-        teacher_fields["verpo_fec_wrong_token_count"] = repeated_count(
-            fec_wrong_token_count
-        )
+        teacher_fields["verpo_evidence_batch_num_tokens"] = repeated_count(routed_token_count)
+        teacher_fields["verpo_evidence_global_batch_size"] = repeated_count(routed_row_count)
+        teacher_fields["verpo_fec_correct_token_count"] = repeated_count(fec_correct_token_count)
+        teacher_fields["verpo_fec_wrong_token_count"] = repeated_count(fec_wrong_token_count)
         teacher_data = TensorDict(teacher_fields, batch_size=len(batch))
         batch = tq.kv_batch_put(keys=batch.keys, partition_id=batch.partition_id, fields=teacher_data)
 
@@ -2188,20 +2177,12 @@ class PPOTrainer(ABC):
         def group_fraction(mask: torch.Tensor) -> float:
             if not group_count:
                 return 0.0
-            tagged = {
-                uid
-                for uid, active in zip(uids, mask.tolist(), strict=True)
-                if bool(active)
-            }
+            tagged = {uid for uid, active in zip(uids, mask.tolist(), strict=True) if bool(active)}
             return float(len(tagged) / group_count)
 
         metrics["verpo/group_gate_rate"] = float(raw_group_gate.float().mean().item())
-        metrics["verpo/available_group_gate_rate"] = float(
-            available_group_gate.float().mean().item()
-        )
-        metrics["verpo/evidence_rollout_gate_rate"] = float(
-            evidence_rollout_gate.float().mean().item()
-        )
+        metrics["verpo/available_group_gate_rate"] = float(available_group_gate.float().mean().item())
+        metrics["verpo/evidence_rollout_gate_rate"] = float(evidence_rollout_gate.float().mean().item())
         metrics["verpo/contrastive_available_rate"] = float(contrastive_available.float().mean().item())
         metrics["verpo/policy_reward_mean"] = float(rewards.mean().item())
         metrics["verpo/policy_reward_min"] = float(rewards.min().item())
@@ -2216,54 +2197,30 @@ class PPOTrainer(ABC):
                 dispreferred = rewards[negative_indices[valid_indices]]
                 metrics["verpo/preferred_reward_mean"] = float(preferred.mean().item())
                 metrics["verpo/dispreferred_reward_mean"] = float(dispreferred.mean().item())
-                metrics["verpo/selected_reward_gap_mean"] = float(
-                    (preferred - dispreferred).mean().item()
-                )
-        metrics["verpo/group_all_one_fraction"] = group_fraction(
-            reward_group_state.all_one
-        )
-        metrics["verpo/group_all_zero_fraction"] = group_fraction(
-            reward_group_state.all_zero
-        )
-        metrics["verpo/group_all_negative_one_fraction"] = group_fraction(
-            reward_group_state.all_negative_one
-        )
-        metrics["verpo/group_zero_variance_fraction"] = group_fraction(
-            reward_group_state.zero_variance
-        )
-        metrics["verpo/group_reward_ranked_zpd_fraction"] = group_fraction(
-            reward_group_state.zpd_gate
-        )
+                metrics["verpo/selected_reward_gap_mean"] = float((preferred - dispreferred).mean().item())
+        metrics["verpo/group_all_one_fraction"] = group_fraction(reward_group_state.all_one)
+        metrics["verpo/group_all_zero_fraction"] = group_fraction(reward_group_state.all_zero)
+        metrics["verpo/group_all_negative_one_fraction"] = group_fraction(reward_group_state.all_negative_one)
+        metrics["verpo/group_zero_variance_fraction"] = group_fraction(reward_group_state.zero_variance)
+        metrics["verpo/group_reward_ranked_zpd_fraction"] = group_fraction(reward_group_state.zpd_gate)
         grouped_outcomes: dict[str, list[bool]] = defaultdict(list)
         for uid, positive in zip(uids, outcome_positive.tolist(), strict=True):
             grouped_outcomes[uid].append(bool(positive))
         all_positive_groups = sum(all(values) for values in grouped_outcomes.values())
         all_negative_groups = sum(not any(values) for values in grouped_outcomes.values())
         mixed_groups = group_count - all_positive_groups - all_negative_groups
-        metrics["verpo/group_all_positive_fraction"] = (
-            float(all_positive_groups / group_count) if group_count else 0.0
-        )
-        metrics["verpo/group_all_negative_fraction"] = (
-            float(all_negative_groups / group_count) if group_count else 0.0
-        )
-        metrics["verpo/group_mixed_fraction"] = (
-            float(mixed_groups / group_count) if group_count else 0.0
-        )
+        metrics["verpo/group_all_positive_fraction"] = float(all_positive_groups / group_count) if group_count else 0.0
+        metrics["verpo/group_all_negative_fraction"] = float(all_negative_groups / group_count) if group_count else 0.0
+        metrics["verpo/group_mixed_fraction"] = float(mixed_groups / group_count) if group_count else 0.0
         metrics["verpo_zpd/group_gate_fraction"] = metrics["verpo/group_gate_rate"]
-        metrics["verpo_zpd/evidence_rollout_gate_fraction"] = metrics[
-            "verpo/evidence_rollout_gate_rate"
-        ]
-        metrics["verpo_zpd/contrastive_available_fraction"] = metrics[
-            "verpo/contrastive_available_rate"
-        ]
+        metrics["verpo_zpd/evidence_rollout_gate_fraction"] = metrics["verpo/evidence_rollout_gate_rate"]
+        metrics["verpo_zpd/contrastive_available_fraction"] = metrics["verpo/contrastive_available_rate"]
         metrics["verpo/teacher_prompt_truncated_rate"] = float(truncated.mean().item())
         metrics["verpo/teacher_prompt_truncated_tokens_mean"] = float(
             teacher_fields["verpo_teacher_prompt_truncated_tokens"].mean().item()
         )
         reference_identity = str(self.config.actor_rollout_ref.model.path)
-        reference_fingerprint = hashlib.sha256(
-            reference_identity.encode("utf-8")
-        ).hexdigest()
+        reference_fingerprint = hashlib.sha256(reference_identity.encode("utf-8")).hexdigest()
         teacher_mode = str(getattr(verpo, "teacher_mode", "fixed_initial"))
         if teacher_mode in {"snapshot", "ema"}:
             reference_fingerprint = "actor_moving_teacher_checkpoint_sidecar"
@@ -2277,9 +2234,7 @@ class PPOTrainer(ABC):
             "q0_parameter_fingerprint": reference_fingerprint,
             "qe_parameter_fingerprint": reference_fingerprint,
             "parameter_fingerprint_source": (
-                "per_rank_actor_teacher_state"
-                if teacher_mode in {"snapshot", "ema"}
-                else "reference_model_path_sha256"
+                "per_rank_actor_teacher_state" if teacher_mode in {"snapshot", "ema"} else "reference_model_path_sha256"
             ),
             "teacher_mode": teacher_mode,
             "measurement_provenance": "training_rollout",
@@ -2300,12 +2255,8 @@ class PPOTrainer(ABC):
             "contrastive_available_rows": int(contrastive_available.sum().item()),
             "all_one_rows": int(reward_group_state.all_one.sum().item()),
             "all_zero_rows": int(reward_group_state.all_zero.sum().item()),
-            "all_negative_one_rows": int(
-                reward_group_state.all_negative_one.sum().item()
-            ),
-            "zero_variance_rows": int(
-                reward_group_state.zero_variance.sum().item()
-            ),
+            "all_negative_one_rows": int(reward_group_state.all_negative_one.sum().item()),
+            "zero_variance_rows": int(reward_group_state.zero_variance.sum().item()),
             "truncated_rows": int(truncated.sum().item()),
             "truncated_tokens": int(sum(truncation_tokens)),
             "max_truncated_tokens": int(max(truncation_tokens, default=0)),

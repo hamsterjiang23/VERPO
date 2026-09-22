@@ -20,6 +20,7 @@ from decimal import Decimal, InvalidOperation
 from typing import Any
 
 import torch
+from risk_aware_opsd.rollout_evidence import select_rollout_evidence
 
 BOXED_ANSWER_INSTRUCTION = "Present your final answer inside \\boxed{}, for example \\boxed{42}."
 LEGACY_BOXED_ANSWER_INSTRUCTION = "Please reason step by step, and put your final answer within \\boxed{}."
@@ -28,9 +29,7 @@ TEACHER_TRANSITION_PROMPT = (
 )
 INCORRECT_CANDIDATE_LABEL = "Incorrect candidate solution:"
 UNAVAILABLE_CONTRASTIVE_HINT = "The output below is an incorrect answer."
-TRUNCATED_CONTRASTIVE_HINT_MARKER = (
-    "\n...[middle of candidate hint truncated to fit Teacher context]...\n"
-)
+TRUNCATED_CONTRASTIVE_HINT_MARKER = "\n...[middle of candidate hint truncated to fit Teacher context]...\n"
 EVAL_DATA_SOURCES = {"amc23", "aime24", "aime25"}
 VERPO_CONTRASTIVE_COMMIT = "3da75d2209317d7f8fc7a89f3f65b8ad5cc4e4c0"
 SDPO_TEACHER_TEMPLATE_ID = "sdpo_official_correct_solution_v1"
@@ -168,12 +167,7 @@ def build_contrastive_teacher_messages(
             raise ValueError("Contrastive Teacher requires a non-empty final raw prompt message")
         hint = f"\n\n{INCORRECT_CANDIDATE_LABEL}\n\n{candidate_response}"
         return raw_messages[:-1] + [{"role": "user", "content": prompt_text + hint}]
-    content = (
-        f"Problem: {problem}\n\n"
-        f"{INCORRECT_CANDIDATE_LABEL}\n\n"
-        f"{candidate_response}\n\n"
-        f"{BOXED_ANSWER_INSTRUCTION}"
-    )
+    content = f"Problem: {problem}\n\n{INCORRECT_CANDIDATE_LABEL}\n\n{candidate_response}\n\n{BOXED_ANSWER_INSTRUCTION}"
     return [{"role": "user", "content": content}]
 
 
@@ -223,11 +217,7 @@ def _budget_contrastive_teacher_prompt(
         head_tokens = (int(keep_tokens) + 1) // 2
         tail_tokens = int(keep_tokens) // 2
         head = tokenizer.decode(candidate_ids[:head_tokens], skip_special_tokens=True)
-        tail = (
-            tokenizer.decode(candidate_ids[-tail_tokens:], skip_special_tokens=True)
-            if tail_tokens
-            else ""
-        )
+        tail = tokenizer.decode(candidate_ids[-tail_tokens:], skip_special_tokens=True) if tail_tokens else ""
         return f"{head}{TRUNCATED_CONTRASTIVE_HINT_MARKER}{tail}".strip()
 
     minimal_prompt_ids = render(truncated_candidate(0))
@@ -392,21 +382,19 @@ def build_contrastive_evidence_teacher_fields(
     max_reprompt_tokens: int = 0,
     reward_models: Any | None = None,
     extra_infos: Any | None = None,
-    num_negative_hints: int = 4,
+    num_negative_hints: int = 1,
+    rollout_ids: list[str] | None = None,
+    require_negative: bool = True,
     selection_mode: str = "correctness",
     chat_template_kwargs: dict[str, Any] | None = None,
     enable_thinking: bool | None = None,
     allow_unboxed_candidates: bool = False,
 ) -> dict[str, torch.Tensor]:
-    """Build contrastive Teacher inputs under an explicit selection mode.
+    """Replay targets with target-excluded, same-group rollout evidence.
 
-    ``correctness`` uses the dataset reference solution plus ground-truth answer
-    for q+ and target-excluded format-valid incorrect siblings for q-. It never
-    infers correctness from a length-shaped reward. ``reward_ranked`` retains
-    the explicit highest/lowest final-reward sibling contrast. The q+ scaffold
-    follows the configured positive-template metadata for correctness mode;
-    every q- branch uses the explicit incorrect-candidate scaffold. All
-    branches keep the identical sampled suffix.
+    Correctness labels must come from the verifier independently of shaped
+    rewards. No dataset solution or ground-truth text enters Teacher prompts.
+    Stable rollout IDs are required for order-invariant selection in training.
     """
     chat_template_kwargs = _resolve_chat_template_kwargs(chat_template_kwargs, enable_thinking)
     if not responses.is_nested:
@@ -432,54 +420,18 @@ def build_contrastive_evidence_teacher_fields(
             "selection_mode=correctness requires independent per-rollout correctness; "
             "refusing to infer correctness from length-shaped rewards"
         )
-    external_positive_candidates: list[str] | None = None
-    teacher_template_variants = [VERPO_CONTRASTIVE_CANDIDATE_HINT_TEMPLATE_ID] * batch_size
-    reward_model_rows: list[Any] | None = None
-    if selection_mode == "correctness":
-        if reward_models is None or extra_infos is None:
-            raise ValueError(
-                "selection_mode=correctness requires reward_models and extra_infos "
-                "to construct the external positive evidence"
-            )
-        reward_model_rows = _as_plain_list(reward_models, batch_size, "reward_model")
-        extra_info_rows = _as_plain_list(extra_infos, batch_size, "extra_info")
-        external_positive_candidates = []
-        for row, (reward_model_value, extra_info_value) in enumerate(
-            zip(reward_model_rows, extra_info_rows, strict=True)
-        ):
-            reward_model = reward_model_value if isinstance(reward_model_value, dict) else {}
-            extra_info = extra_info_value if isinstance(extra_info_value, dict) else {}
-            answer = _content_to_text(reward_model.get("ground_truth", "")).strip()
-            solution = _content_to_text(extra_info.get("solution", "")).strip()
-            teacher_template_variants[row] = str(
-                extra_info.get("teacher_prompt_template", VERPO_CONTRASTIVE_CANDIDATE_HINT_TEMPLATE_ID)
-            )
-            if not solution:
-                raise ValueError(f"Sample {row} requires a non-empty external reference solution for q+")
-            if not answer:
-                raise ValueError(f"Sample {row} requires a non-empty ground-truth answer for q+")
-            if teacher_template_variants[row] == SDPO_TEACHER_TEMPLATE_ID:
-                # Official SDPO inserts the successful solution verbatim into
-                # ``solution_template``. The generated SDPO solution already
-                # contains its validated final answer, so adding VERPO_CONTRASTIVE's
-                # wrapper here would silently change the training reprompt.
-                external_positive_candidates.append(solution)
-            else:
-                external_positive_candidates.append(f"{solution}\n\nFinal answer: {answer}")
+    reward_model_rows = (
+        _as_plain_list(reward_models, batch_size, "reward_model") if reward_models is not None else [{}] * batch_size
+    )
     if bool(allow_unboxed_candidates):
-        format_valid = [True] * batch_size
-    elif selection_mode == "correctness":
-        assert reward_model_rows is not None
-        format_valid = [
-            is_sdpo_candidate_format_valid(text, reward_model)
-            if teacher_template_variants[row] == SDPO_TEACHER_TEMPLATE_ID
-            else extract_boxed_answer(text) is not None
-            for row, (text, reward_model) in enumerate(
-                zip(response_texts, reward_model_rows, strict=True)
-            )
-        ]
+        format_valid = [bool(text) for text in response_texts]
     else:
-        format_valid = [extract_boxed_answer(text) is not None for text in response_texts]
+        format_valid = [
+            is_sdpo_candidate_format_valid(text, model)
+            if str(model.get("style", "")) in _SDPO_MCQ_STYLES | _SDPO_TOOLUSE_STYLES
+            else extract_boxed_answer(text) is not None
+            for text, model in zip(response_texts, reward_model_rows, strict=True)
+        ]
     if correctness is not None:
         correctness_rows = correctness.detach().bool().flatten().cpu()
         if correctness_rows.numel() != batch_size:
@@ -489,63 +441,26 @@ def build_contrastive_evidence_teacher_fields(
         # Reward-ranked selection deliberately ignores correctness and orders
         # siblings by the final scalar reward used by GRPO and the group gate.
         correct = [False] * batch_size
-    groups: dict[str, list[int]] = {}
-    for index, uid in enumerate(uid_rows):
-        groups.setdefault(str(uid), []).append(index)
-
-    positive_indices: list[int] = []
-    negative_indices: list[list[int]] = []
-    available: list[bool] = []
-    for row, uid in enumerate(uid_rows):
-        group = groups[str(uid)]
-        if selection_mode == "reward_ranked":
-            siblings = [index for index in group if index != row]
-            sibling_rewards = [float(reward_rows[index].item()) for index in siblings]
-            row_available = bool(
-                siblings and max(sibling_rewards) > min(sibling_rewards) + 1e-8
-            )
-        else:
-            negative_pool = [
-                index
-                for index in group
-                if index != row and format_valid[index] and not correct[index]
-            ]
-            row_available = bool(negative_pool)
-        available.append(row_available)
-        if row_available and selection_mode == "reward_ranked":
-            highest = max(sibling_rewards)
-            lowest = min(sibling_rewards)
-            positive_pool = [
-                index
-                for index in siblings
-                if abs(float(reward_rows[index].item()) - highest) <= 1e-8
-            ]
-            negative_pool = [
-                index
-                for index in siblings
-                if abs(float(reward_rows[index].item()) - lowest) <= 1e-8
-            ]
-        if row_available:
-            positive_index = (
-                positive_pool[row % len(positive_pool)]
-                if selection_mode == "reward_ranked"
-                else -1
-            )
-            offset = row % len(negative_pool)
-            ordered_negative = negative_pool[offset:] + negative_pool[:offset]
-            row_negative_indices = [
-                ordered_negative[index % len(ordered_negative)] for index in range(int(num_negative_hints))
-            ]
-        else:
-            positive_index = -1
-            row_negative_indices = [-1] * int(num_negative_hints)
-        positive_indices.append(positive_index)
-        negative_indices.append(row_negative_indices)
-
+    if selection_mode != "correctness":
+        raise ValueError("rollout_group evidence requires verifier correctness, not reward ranking")
+    stable_ids = rollout_ids if rollout_ids is not None else [f"{uid}_{i}" for i, uid in enumerate(uid_rows)]
+    selection = select_rollout_evidence(
+        [str(uid) for uid in uid_rows],
+        stable_ids,
+        correct,
+        format_valid,
+        response_texts,
+        require_negative=require_negative,
+        num_negative=num_negative_hints,
+    )
+    positive_indices = list(selection.positive)
+    negative_indices = list(selection.negative)
     fields: dict[str, torch.Tensor] = {
-        "verpo_contrastive_available": torch.tensor(available, dtype=torch.bool),
+        "verpo_contrastive_available": torch.tensor(selection.available, dtype=torch.bool),
         "verpo_positive_sibling_index": torch.tensor(positive_indices, dtype=torch.long),
         "verpo_negative_sibling_indices": torch.tensor(negative_indices, dtype=torch.long),
+        "verpo_evidence_reason": torch.tensor(selection.reason, dtype=torch.long),
+        "verpo_candidate_format_valid": torch.tensor(format_valid, dtype=torch.bool),
     }
     truncation_by_teacher: list[list[int]] = [[] for _ in range(batch_size)]
     prompt_before_by_teacher: list[list[int]] = [[] for _ in range(batch_size)]
@@ -571,15 +486,28 @@ def build_contrastive_evidence_teacher_fields(
             max_prompt_tokens = total_token_budget - len(response_ids)
             if int(max_reprompt_tokens) > 0:
                 max_prompt_tokens = min(max_prompt_tokens, int(max_reprompt_tokens))
-            prompt_ids, prompt_tokens_before, prompt_tokens_after = _budget_contrastive_teacher_prompt(
-                tokenizer=tokenizer,
-                problem=problem,
-                candidate_response=candidate,
-                max_prompt_tokens=max_prompt_tokens,
-                chat_template_kwargs=chat_template_kwargs,
-                raw_prompt=raw_prompt_rows[row],
-                template_variant=template_variants[row],
-            )
+            if candidate:
+                prompt_ids, prompt_tokens_before, prompt_tokens_after = _budget_contrastive_teacher_prompt(
+                    tokenizer=tokenizer,
+                    problem=problem,
+                    candidate_response=candidate,
+                    max_prompt_tokens=max_prompt_tokens,
+                    chat_template_kwargs=chat_template_kwargs,
+                    raw_prompt=raw_prompt_rows[row],
+                    template_variant=template_variants[row],
+                )
+            else:
+                # Masked branches replay the original prompt, never fabricated evidence.
+                prompt_ids = tokenizer.apply_chat_template(
+                    raw_prompt_rows[row],
+                    tokenize=True,
+                    add_generation_prompt=True,
+                    **(chat_template_kwargs or {}),
+                )
+                prompt_tokens_before = len(prompt_ids)
+                if len(prompt_ids) > max_prompt_tokens:
+                    raise ValueError("Original prompt exceeds unavailable-branch budget")
+                prompt_tokens_after = len(prompt_ids)
             combined = torch.tensor(prompt_ids + response_ids, dtype=torch.long)
             if combined[-len(response_ids) :].tolist() != response_ids:
                 raise AssertionError("Contrastive Teacher completion suffix changed during construction")
@@ -593,35 +521,18 @@ def build_contrastive_evidence_teacher_fields(
         fields[f"{prefix}_position_ids"] = torch.nested.as_nested_tensor(position_rows, layout=torch.jagged)
         fields[f"{prefix}_prompt_lengths"] = torch.tensor(kept_prompt_lens, dtype=torch.long)
 
-    if selection_mode == "correctness":
-        assert external_positive_candidates is not None
-        positive_candidates = external_positive_candidates
-        positive_template_variants = teacher_template_variants
+    positive_candidates = [response_texts[i] if i >= 0 else "" for i in positive_indices]
+    build_branch("verpo_positive", positive_candidates, [SDPO_TEACHER_TEMPLATE_ID] * batch_size)
+    if require_negative:
+        for k in range(num_negative_hints):
+            build_branch(
+                f"verpo_negative_{k}",
+                [response_texts[indices[k]] if indices[k] >= 0 else "" for indices in negative_indices],
+                [VERPO_CONTRASTIVE_CANDIDATE_HINT_TEMPLATE_ID] * batch_size,
+            )
     else:
-        positive_candidates = [
-            response_texts[index] if index >= 0 else UNAVAILABLE_CONTRASTIVE_HINT
-            for index in positive_indices
-        ]
-        # Reward-ranked siblings are not guaranteed to be correct, so they
-        # use the explicit candidate scaffold rather than SDPO's
-        # ``Correct solution`` scaffold.
-        positive_template_variants = [VERPO_CONTRASTIVE_CANDIDATE_HINT_TEMPLATE_ID] * batch_size
-    build_branch("verpo_positive", positive_candidates, positive_template_variants)
-    # A target-excluded incorrect sibling is never a ``Correct solution``.
-    # Use the explicit incorrect-candidate scaffold for every q- branch,
-    # including datasets whose q+ metadata selects the official SDPO template.
-    negative_template_variants = [VERPO_CONTRASTIVE_CANDIDATE_HINT_TEMPLATE_ID] * batch_size
-    for negative_index in range(int(num_negative_hints)):
-        build_branch(
-            f"verpo_negative_{negative_index}",
-            [
-                response_texts[indices[negative_index]]
-                if indices[negative_index] >= 0
-                else UNAVAILABLE_CONTRASTIVE_HINT
-                for indices in negative_indices
-            ],
-            negative_template_variants,
-        )
+        for suffix in ("input_ids", "position_ids", "prompt_lengths"):
+            fields[f"verpo_evidence_{suffix}"] = fields[f"verpo_positive_{suffix}"]
 
     max_truncation = [max(values, default=0) for values in truncation_by_teacher]
     max_before = [max(values, default=0) for values in prompt_before_by_teacher]
@@ -696,7 +607,9 @@ def grade_boxed_answer(predicted: str | None, ground_truth: str) -> bool:
     try:
         from math_verify import parse, verify
     except ImportError as exc:
-        raise ModuleNotFoundError("math_verify is required for VERPO_CONTRASTIVE-aligned grading; install math-verify") from exc
+        raise ModuleNotFoundError(
+            "math_verify is required for VERPO_CONTRASTIVE-aligned grading; install math-verify"
+        ) from exc
     try:
         pred_text = predicted if "$" in predicted else f"${predicted}$"
         gt_text = str(ground_truth) if "$" in str(ground_truth) else f"${ground_truth}$"

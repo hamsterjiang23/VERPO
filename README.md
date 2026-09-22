@@ -1,262 +1,137 @@
-# VERPO-ZPD
+# VERPO
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-**VERPO: Verified Evidence-Regularized Policy Optimization** — evidence-aware
-policy optimization with Teacher-guided, token-level distribution corrections.
+**Verified Evidence Regularized Policy Optimization**
 
-VERPO combines a GRPO policy objective with a signed correction derived from
-Teacher distributions under different evidence conditions. The correction is
-controlled at two levels: a prompt-group gate decides whether a group contains
-useful reward variation, and a token-level ZPD controller scales each evidence
-direction by its local benefit and policy-movement cost.
+[Paper (arXiv v2)](https://arxiv.org/abs/2609.06100v2) · [Reproduction guide](docs/reproduce_paper.md) · [Data](docs/data.md) · [Results and provenance](results/README.md)
 
-The implementation is organized around one semantic configuration and two
-training backends. Native veRL provides the Section 3 protocol launcher;
-the TRL path provides a small JSONL/math-text interface for portable VERPO
-experiments.
+VERPO retains the GRPO outcome objective and uses a stopped token controller to
+accept evidence-induced corrections. Fixed, CTR and FEC select different
+correction directions; LW weights the evidence loss and AM modulates advantages.
 
-## Table of Contents
-
-- [Method](#method)
-- [Variants and controls](#variants-and-controls)
-- [Repository structure](#repository-structure)
-- [Installation](#installation)
-- [Quickstart: TRL (JSONL)](#quickstart-trl-jsonl)
-- [Quickstart: native veRL](#quickstart-native-verl)
-- [Semantic configuration](#semantic-configuration)
-- [Environment variables](#environment-variables)
-- [Data and credentials](#data-and-credentials)
-- [Citation](#citation)
-- [License](#license)
-- [Contributors](#contributors)
-- [Acknowledgments](#acknowledgments)
-
-## Method
-
-```text
-prompt
-  -> Student rollout
-  -> Teacher scoring under evidence conditions
-  -> signed Teacher displacement
-  -> ZPD benefit/cost controller
-  -> GRPO objective + VERPO correction
-  -> updated Student policy
+```mermaid
+flowchart LR
+  A[Original prompt] --> B[Student rollout group]
+  B --> C[Verifier: correctness and format]
+  C --> D[Select other correct / incorrect rollouts]
+  D --> E[Teacher replays each target prefix: q+, q-, q0]
+  E --> F[FEC direction and stopped benefit/cost controller]
+  F --> G[GRPO + reference + accepted correction]
 ```
 
-For a fixed rollout prefix, the Teacher branches are represented as token
-distributions:
+## Implementation and verification status
 
-- `q0`: evidence-free Teacher distribution;
-- `qe`: evidence-conditioned Teacher distribution;
-- `q+`, `q-`: positive and negative contrastive Teacher distributions.
+The native veRL launcher is the training interface. This revision uses **same-group
+rollout evidence**, excluding the target itself. It never falls back to a dataset
+solution or ground-truth text. Ground truth is available only to the verifier.
+The selected response is evidence text; `q+` is the Teacher distribution obtained
+by replaying the *target's* prefix with that evidence. Reference and `q0` use
+no evidence; with an EMA Teacher this implementation uses its moving shadow for
+both branches, while keeping the reference loss independent of evidence gating.
 
-The signed Teacher displacement is the only difference between the main
-VERPO variants:
+The `pipeline/trl/` entry is a **synthetic loss smoke**, not a pretrained-model TRL
+training backend. It uses artificial tokens and a tiny model. Torch is optional
+for lightweight contract checks and is not installed by the default CI.
 
-```text
-Fixed:  Delta_t = q_e,t - q_0,t
-CTR:    Delta_t = q_+,t - q_-,t
-FEC:    task direction minus the Fisher projection of the nuisance direction
-```
+CPU checks do not establish GPU training success or reproduction of paper scores.
+See [verification](docs/verification.md) for executed checks and explicit gaps.
 
-For the default Forward-KL controller, the evidence correction is weighted by
+## Quickstart
 
-```text
-w_t = h_t / (h_t + tau * (c_t + rho))
-```
-
-`h_t` is the local evidence benefit and `c_t` is the local policy-movement
-cost. The FEC direction removes the Student-local Fisher projection of the
-evidence-presence nuisance before computing the signed correction.
-
-The backend-neutral trainer combines the reference and evidence terms as
-
-```text
-L_VERPO = lambda_ref * L_ref + lambda_evi * L_evi
-```
-
-The exact full-vocabulary definitions and the selected-support Top-K
-approximation are implemented in `risk_aware_opsd/verpo_zpd.py`.
-
-## Variants and controls
-
-| Variant | Teacher displacement | Purpose |
-| --- | --- | --- |
-| Fixed | `q_e - q_0` | Evidence-conditioned correction |
-| CTR | `q_+ - q_-` | Positive/negative contrastive correction |
-| FEC | Contrastive task direction minus nuisance projection | Evidence-confound removal |
-| Forward-KL | Probability-space correction | Forward divergence path |
-| Reverse-KL | Geometric Teacher path and Student-local Fisher tangent | Reverse divergence path |
-| Top-K | Selected-support approximation | Memory-conscious vocabulary computation |
-
-Teacher state is configurable as:
-
-- `frozen`: fixed initial Teacher;
-- `snapshot10`: synchronize after the configured optimizer-update interval;
-- `ema_095`: update the Teacher with exponential moving average state.
-
-The shared `VERPOConfig` exposes displacement mode, Teacher mode, vocabulary
-mode, group-level ZPD, evidence rollout scope, divergence, coefficients, and
-Teacher synchronization controls.
-
-## Repository structure
-
-| Path | Role |
-| --- | --- |
-| `risk_aware_opsd/` | Backend-neutral VERPO loss, ZPD controller, Teacher state, reward, and JSONL contract |
-| `scripts/` | Launching, packaging, and audit utilities |
-| `verl/verl/trainer/distillation/` | Native veRL VERPO implementation (vendored veRL tree) |
-| `pipeline/trl/` | JSONL/math-text TRL entry point |
-| `pipeline/verl_math/` | Native veRL launcher and engine scripts |
-| `configs/verpo/` | Semantic model, protocol, Teacher, arm, and matrix configuration |
-| `archive/rlcsd/` | Historical material outside the active VERPO launch path |
-| `provenance/` | File-level reproducibility metadata |
-
-The public training interface is the launcher layer. Internal engine scripts
-are implementation details and should not be invoked directly.
-
-## Installation
-
-Use the committed `uv.lock` file. CPU/development dependencies are separate
-from the GPU training profile:
+Linux and Bash are required for native GPU training. Install
+[uv](https://docs.astral.sh/uv/), then create the lightweight environment:
 
 ```bash
-# CPU development environment (portable TRL experiments, config resolution)
-uv sync --extra cpu --extra dev
-
-# Host with the matching CUDA, veRL, and rollout runtime
-uv sync --extra gpu
+uv venv --python 3.12
+uv pip install -r requirements-check.txt
+uv run --no-sync python -m pytest tests -q
 ```
 
-The native veRL GPU environment is pinned separately in
-`pipeline/verl_math/requirements.txt`.
-
-Do not commit `.env` files, datasets, model weights, checkpoints, logs, or
-generated output directories.
-
-## Quickstart: TRL (JSONL)
-
-The TRL interface accepts local JSONL/math-text records. Each row contains a
-`prompt` and `completion`; `response` is accepted as an alternative completion
-field.
-
-```json
-{
-  "prompt": "local prompt text",
-  "completion": "local completion text"
-}
-```
-
-Install the CPU and development environment, then run a one-step smoke:
-
-```bash
-uv sync --extra cpu --extra dev
-
-bash pipeline/trl/run.sh \
-  --train-file path/to/private/train.jsonl \
-  --output-dir outputs/trl-verpo \
-  --max-steps 1
-```
-
-This path is intentionally limited to JSONL/math-text. Parquet protocol data
-belongs to the native veRL entry point.
-
-## Quickstart: native veRL
-
-Resolve one Section 3 cell without allocating a GPU:
+Inspect a paper configuration without downloads, credentials or GPUs:
 
 ```bash
 bash pipeline/verl_math/run.sh \
-  --model qwen3_1_7b \
-  --finetuning full \
-  --hardware a100_8x_80gb \
-  --protocol sdpo_section3_biology \
-  --teacher frozen \
-  --arm fixed_fkl \
-  --print-config
+  --model qwen3_4b --finetuning full --hardware a800_8x_80gb \
+  --matrix paper_main --print-command
 ```
 
-Inspect the complete registered configuration matrix before launching it:
+`--print-config` only composes YAML. `--print-command` runs the real engine's
+preflight and prints its actual Hydra projection. For a single LW cell:
 
 ```bash
 bash pipeline/verl_math/run.sh \
-  --model qwen3_1_7b \
-  --finetuning full \
-  --hardware a100_8x_80gb \
-  --matrix sdpo_five_dataset_teacher_arm \
+  --model qwen3_4b --finetuning full --hardware a800_8x_80gb \
+  --protocol sdpo_section3_biology --teacher ema_095 --arm fec_fkl \
+  --set protocol.total_training_steps=200 --set method.lambda_evi=1.0 \
   --print-command
 ```
 
-The matrix is a configuration composition of five Section 3 protocols, three
-Teacher states, and six Fixed/CTR/FEC Forward- and Reverse-KL arms. It defines
-launch cells; it is not an evaluation table.
+For formal training, provision a compatible GPU host and `SWANLAB_API_KEY` in its
+environment, review the dry-run, then remove `--print-command`. The launcher
+bootstraps the GPU runtime and prepares the pinned public data/model if missing.
+Llama access may require Hugging Face model access authorization. No credentials
+belong in commands, config files or logs.
 
-Formal training requires `SWANLAB_API_KEY` from the host environment. Use
-`--print-config` or `--print-command` before any resource-consuming launch.
+## Paper configurations
 
-## Semantic configuration
+| Matrix / arm | Meaning |
+|---|---|
+| `paper_main` | Five tasks × LW/AM; run once for each of the three backbones |
+| `paper_combined` | Five tasks × LW+AM |
+| `paper_ablations` | Fixed/CTR/FEC FKL and FEC RKL directions |
+| `paper_baselines` | Public GRPO/SDPO/SRPO implementations |
+| `fec_fkl` | VERPO-LW; paper matrix sets evidence coefficient to 1.0 |
+| `fec_advmod_fkl` | VERPO-AM; evidence coefficient 0, advantage coefficient 1 |
+| `fec_advmod_fkl_combined` | Both paths enabled |
 
-Semantic configuration is composed from model, finetuning, hardware, protocol,
-Teacher, and arm overlays. The field reference and available identifiers are
-documented in [`configs/verpo/README.md`](configs/verpo/README.md).
+The paper matrices use **200 trainer steps**, validation every 5, checkpoints
+every 50 without pruning, and EMA decay 0.95. This is not 200 optimizer updates.
+The historical general-purpose profiles retain their 300-step budget and their
+own coefficients. RLSD/RLCSD paper numbers are transcribed in the results archive;
+they do not imply runnable baseline matrices in this public release.
 
-Each resolved launch can emit a semantic configuration and backend projections
-under its output provenance directory. The `archive/rlcsd/` directory is not
-part of the active public launch path.
+## Reported results
 
-## Environment variables
+The following values are **paper v2 Table 2 transcriptions**, not measurements of
+this checkout. The paper selects the highest evaluation score per task using the
+test split during training. Average is the unweighted average of those separate
+maxima, not a common/final checkpoint. Collapsed runs and reward hacking are
+retained in the [complete transcription](results/paper_v2_table2.json).
 
-Data, model weights, checkpoints, logs, caches, and credentials are operator
-inputs and are not committed here. Configure only local paths and host-managed
-credentials:
+| Backbone | VERPO-LW (%) | VERPO-AM (%) |
+|---|---|---|
+| Qwen3-4B | 68.57 | 66.71 |
+| Qwen3-8B | 71.44 | 70.58 |
+| Llama-3.2-1B | 56.57 | 55.19 |
 
-| Variable | Meaning |
-| --- | --- |
-| `SDPO_DATA_DIR` | Operator-provided local data root |
-| `TRAIN_FILE` / `VAL_FILE` | Explicit local file overrides |
-| `MODEL_PATH` | Local model snapshot |
-| `MODEL_CACHE` / `HF_HOME` | Model cache |
-| `SWANLAB_API_KEY` | Host-injected SwanLab credential |
-| `OUTPUT_ROOT` | Single-cell output root |
-| `MATRIX_OUTPUT_ROOT` | Matrix output root |
+Run IDs, selected steps, raw predictions and source-precision metrics have not
+been matched to these historical entries. They are explicitly null in the
+transcription. New rollout-only runs have a separate evidence-source identity.
 
-## Data and credentials
+## Repository map
 
-This README intentionally omits data distribution details, storage identifiers,
-cloud storage, private manifests, and internal asset preparation procedures.
-Never place `SWANLAB_API_KEY` in commands, YAML, README examples, manifests, or
-logs.
+- `risk_aware_opsd/`: losses, semantic configuration, data contract and evidence selection.
+- `verl/`: vendored native training implementation and tensor tests.
+- `pipeline/verl_math/`: native launcher; engine scripts are internal.
+- `pipeline/trl/`: synthetic smoke only.
+- `configs/`: pinned data manifest and composed training configurations.
+- `tests/`: lightweight public-contract tests; optional tensor tests skip without torch.
+- `results/`: source-labeled paper transcription and result-input example.
 
-## Citation
-
-A paper reference will be added here upon publication. Until then, please cite
-this repository:
+## Citation and license
 
 ```bibtex
-@misc{verpo-zpd,
-  title        = {{VERPO-ZPD}: Verified Evidence-Regularized Policy Optimization},
-  author       = {hamsterjiang23 and thomass1003},
-  year         = {2026},
-  howpublished = {\url{https://github.com/hamsterjiang23/VERPO-ZPD}},
+@article{li2026verpo,
+  title={VERPO: Verified Evidence Regularized Policy Optimization},
+  author={Li, Haijiang and Lv, Chengyu and Zhang, Yi and Qian, Rui and Zhang, Zhibing and Shen, Xiangqing and Yang, Junjie and Zhang, Yuchen and Jiang, Wenyuan and Hu, Hanqing and Zhou, Cangqi},
+  journal={arXiv preprint arXiv:2609.06100},
+  year={2026},
+  doi={10.48550/arXiv.2609.06100},
+  url={https://arxiv.org/abs/2609.06100v2}
 }
 ```
 
-## License
-
-The project sources at the repository root do not yet declare a license. The
-vendored veRL tree under `verl/` remains under its original
-[Apache License 2.0](verl/LICENSE).
-
-## Contributors
-
-| Contributor | Role | GitHub |
-| --- | --- | --- |
-| hamsterjiang23 | Maintainer | [@hamsterjiang23](https://github.com/hamsterjiang23) |
-| thomass1003 | Contributor | [@thomass1003](https://github.com/thomass1003) |
-
-## Acknowledgments
-
-The native backend builds on [veRL](https://github.com/volcengine/verl),
-an RL training library initiated by the ByteDance Seed team and maintained by
-the veRL community.
+Project additions are licensed under [Apache-2.0](LICENSE). Vendored components
+retain their original notices; see [third-party notices](THIRD_PARTY_NOTICES.md).
+The native backend builds on [veRL](https://github.com/volcengine/verl).

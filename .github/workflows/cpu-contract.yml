@@ -1,0 +1,22 @@
+name: CPU public reproduction contract
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  cpu-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv venv --python 3.12
+      - name: Install lightweight checks (no torch)
+        run: uv pip install -r requirements-check.txt
+      - name: Public entrypoints, evidence selection, data and results
+        run: uv run --no-sync python -m pytest tests -q
+      - name: Syntax check without importing tensor runtimes
+        run: uv run --no-sync python -m compileall -q risk_aware_opsd scripts verl/verl/trainer/distillation/verpo_protocol.py verl/verl/trainer/ppo/v1/trainer_base.py
+      - name: Shell syntax
+        run: |
+          for script in pipeline/verl_math/run.sh pipeline/verl_math/engines/sdpo_section3.sh pipeline/trl/run.sh; do
+            bash -n "$script"
+          done
+      - name: Existing tensor suite when dependencies are already available
+        run: uv run --no-sync python -m scripts.check_optional_tensor_tests

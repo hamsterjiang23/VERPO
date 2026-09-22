@@ -1,0 +1,4 @@
+PyYAML==6.0.3
+pytest==9.1.1
+pyarrow==25.0.1
+ruff==0.16.8

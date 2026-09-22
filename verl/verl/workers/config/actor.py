@@ -177,7 +177,8 @@ class VerpoZPDConfig(BaseConfig):
     group_zpd_mode: str = "binary_mixed"
     sibling_selection_mode: str = "correctness"
     evidence_rollout_scope: str = "all"
-    contrastive_num_negative_hints: int = 4
+    evidence_source: str = "rollout_group"
+    contrastive_num_negative_hints: int = 1
     smoke_allow_unboxed_contrastive: bool = False
     projection_epsilon: float = 1e-8
     lambda_ref: float = 0.1

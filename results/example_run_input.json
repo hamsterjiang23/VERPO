@@ -1,0 +1,146 @@
+{
+  "fixture": true,
+  "description": "Synthetic summarizer example; not a model experiment.",
+  "runs": [
+    {
+      "model": "synthetic-fixture",
+      "method": "VERPO-LW",
+      "task": "biology",
+      "run_id": "synthetic-biology",
+      "seed": 42,
+      "config_path": null,
+      "config_hash": null,
+      "code_revision": null,
+      "evidence_source": "synthetic_fixture",
+      "evaluation_source": "synthetic_fixture",
+      "status": "ok",
+      "predictions_path": null,
+      "points": [
+        {
+          "step": 150,
+          "score": 0.5
+        },
+        {
+          "step": 155,
+          "score": 0.5
+        },
+        {
+          "step": 200,
+          "score": 0.45
+        }
+      ]
+    },
+    {
+      "model": "synthetic-fixture",
+      "method": "VERPO-LW",
+      "task": "chemistry",
+      "run_id": "synthetic-chemistry",
+      "seed": 42,
+      "config_path": null,
+      "config_hash": null,
+      "code_revision": null,
+      "evidence_source": "synthetic_fixture",
+      "evaluation_source": "synthetic_fixture",
+      "status": "ok",
+      "predictions_path": null,
+      "points": [
+        {
+          "step": 150,
+          "score": 0.51
+        },
+        {
+          "step": 155,
+          "score": 0.51
+        },
+        {
+          "step": 200,
+          "score": 0.46
+        }
+      ]
+    },
+    {
+      "model": "synthetic-fixture",
+      "method": "VERPO-LW",
+      "task": "material",
+      "run_id": "synthetic-material",
+      "seed": 42,
+      "config_path": null,
+      "config_hash": null,
+      "code_revision": null,
+      "evidence_source": "synthetic_fixture",
+      "evaluation_source": "synthetic_fixture",
+      "status": "ok",
+      "predictions_path": null,
+      "points": [
+        {
+          "step": 150,
+          "score": 0.52
+        },
+        {
+          "step": 155,
+          "score": 0.52
+        },
+        {
+          "step": 200,
+          "score": 0.47000000000000003
+        }
+      ]
+    },
+    {
+      "model": "synthetic-fixture",
+      "method": "VERPO-LW",
+      "task": "physics",
+      "run_id": "synthetic-physics",
+      "seed": 42,
+      "config_path": null,
+      "config_hash": null,
+      "code_revision": null,
+      "evidence_source": "synthetic_fixture",
+      "evaluation_source": "synthetic_fixture",
+      "status": "ok",
+      "predictions_path": null,
+      "points": [
+        {
+          "step": 150,
+          "score": 0.53
+        },
+        {
+          "step": 155,
+          "score": 0.53
+        },
+        {
+          "step": 200,
+          "score": 0.48
+        }
+      ]
+    },
+    {
+      "model": "synthetic-fixture",
+      "method": "VERPO-LW",
+      "task": "tooluse",
+      "run_id": "synthetic-tooluse",
+      "seed": 42,
+      "config_path": null,
+      "config_hash": null,
+      "code_revision": null,
+      "evidence_source": "synthetic_fixture",
+      "evaluation_source": "synthetic_fixture",
+      "status": "ok",
+      "predictions_path": null,
+      "points": [
+        {
+          "step": 150,
+          "score": 0.54
+        },
+        {
+          "step": 155,
+          "score": 0.54
+        },
+        {
+          "step": 200,
+          "score": 0.49
+        }
+      ]
+    }
+  ]
+}

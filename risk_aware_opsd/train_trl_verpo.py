@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Train or smoke-test pure VERPO on JSONL/math-text rows.
+"""Synthetic VERPO loss smoke; this is not pretrained-model TRL/GRPO training.
 
 The CLI intentionally does not adapt Parquet SDPO records.  Native veRL owns
 the formal Section 3 protocols; this path is for small text fixtures and
@@ -14,7 +14,6 @@ from pathlib import Path
 
 from .math_text_protocol import load_jsonl, validate_math_text_row
 from .verpo_launch_config import VERPOConfig
-from .verpo_trainer import VERPOTrainer
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -72,6 +71,8 @@ def main(argv: list[str] | None = None) -> int:
     except ImportError as exc:
         raise SystemExit("TRL VERPO smoke requires the CPU dependency group: uv sync --extra cpu") from exc
 
+    from .verpo_trainer import VERPOTrainer
+
     torch.manual_seed(0)
     vocab = max(4, int(args.toy_vocab_size))
     hidden = max(2, int(args.toy_hidden_size))
@@ -82,15 +83,16 @@ def main(argv: list[str] | None = None) -> int:
     token_ids = torch.tensor([[index % vocab, (index + 1) % vocab] for index in range(len(rows))], dtype=torch.long)
     for _ in range(max(1, int(args.max_steps))):
         logits = model(token_ids)
-        teacher = logits.detach() + 0.05
+        direction = torch.linspace(-0.3, 0.3, vocab, device=logits.device)
+        teacher = logits.detach() + direction
         weights = torch.ones(logits.shape[:-1])
         loss, metrics = trainer.compute_verpo_loss(
             logits,
             reference_logits=teacher,
             base_teacher_logits=teacher,
-            evidence_teacher_logits=teacher + 0.01,
-            positive_teacher_logits=teacher + 0.01,
-            negative_teacher_logits=teacher - 0.01,
+            evidence_teacher_logits=teacher + direction.flip(0) * 0.2,
+            positive_teacher_logits=teacher + direction.flip(0) * 0.2,
+            negative_teacher_logits=teacher - direction * 0.4,
             no_evidence_teacher_logits=teacher,
             sampled_token_ids=token_ids,
             evidence_weights=weights,
@@ -98,6 +100,10 @@ def main(argv: list[str] | None = None) -> int:
         )
         optimizer.zero_grad(set_to_none=True)
         loss.backward()
+        gradient_norm = sum(parameter.grad.detach().square().sum() for parameter in model.parameters() if parameter.grad is not None).sqrt()
+        if not torch.isfinite(loss) or not torch.isfinite(gradient_norm) or gradient_norm <= 0:
+            raise RuntimeError("synthetic smoke requires finite loss and nonzero finite gradient")
+        metrics["gradient_norm"] = gradient_norm
         optimizer.step()
         trainer.global_step += 1
     args.output_dir.mkdir(parents=True, exist_ok=True)

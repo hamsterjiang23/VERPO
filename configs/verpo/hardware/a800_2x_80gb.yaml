@@ -12,6 +12,6 @@ config:
     gpu_memory_mib_max: 83000
     rollout_backend: sglang
     actor_micro_batch_per_gpu: 2
-    vllm_gpu_memory_utilization: 0.88
+    vllm_gpu_memory_utilization: 0.6
     rollout_enforce_eager: false
     free_cache_engine: true
