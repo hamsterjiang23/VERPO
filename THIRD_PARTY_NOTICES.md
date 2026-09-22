@@ -13,6 +13,9 @@ on upstream code, datasets, model weights or the paper.
   `configs/sdpo_source_manifest.json`. Science data derive from SciKnowEval and
   Tool Use from ToolAlpaca. Source datasets remain under their upstream terms;
   generated files are not committed or relicensed by this project.
+- **VERPO paper figures and abstract**: README figures, the English abstract and
+  its Chinese translation retain the paper's CC BY-SA 4.0 license. See
+  [asset attribution and provenance](assets/README.md).
 - **Models**: Qwen and Llama weights are fetched separately and retain their model
   licenses/access requirements. No model weight files are included.
 

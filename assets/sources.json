@@ -1,0 +1,24 @@
+{
+  "paper": "https://arxiv.org/abs/2609.06100v2",
+  "license": "CC-BY-SA-4.0",
+  "authors": "Haijiang Li, Chengyu Lv, Yi Zhang, Rui Qian, Zhibing Zhang, Xiangqing Shen, Junjie Yang, Yuchen Zhang, Wenyuan Jiang, Hanqing Hu, Cangqi Zhou",
+  "archive_sha256": "6c58823949f89048b7abedcc86aa034cad53f1b7e12c70bf1b3b4c06ef989f54",
+  "figures": [
+    {
+      "path": "overview.png",
+      "figure": 3,
+      "source_member": "fig/Method_asset.pdf",
+      "source_sha256": "f27512904bd63ce37ad9b40836d47cdb022567613a3717facadc10e38be9473a",
+      "sha256": "6234db3f2d41c873c844af37bc5b0ea749b84235a2082e4d943defad3cf41efa",
+      "bytes": 307958
+    },
+    {
+      "path": "grpo-verpo.png",
+      "figure": 1,
+      "source_member": "fig/Motivation_RLVR.pdf",
+      "source_sha256": "15fe7695a13e819803aa968daa149f6b3a288a0dd7ff18863655628575b314bd",
+      "sha256": "6b75fc12e3de5f69eb4512c965d9c07ed9e43aeaeef2d99451be87847e60f3b8",
+      "bytes": 1618685
+    }
+  ]
+}
