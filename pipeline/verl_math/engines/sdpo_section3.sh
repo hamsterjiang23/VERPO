@@ -39,9 +39,6 @@ SDPO_DATA_VERSION=${SDPO_DATA_VERSION:-sdpo_rollout_group_v1}
 VENV_DIR=${VENV_DIR:-"$ROOT/.venvs/qwen3-1.7b-verpo-zpd"}
 BOOTSTRAP_PYTHON=${BOOTSTRAP_PYTHON:-python3}
 PYTHON_BIN="$VENV_DIR/bin/python"
-SWANLAB_API_KEY=${SWANLAB_API_KEY:-}
-SWANLAB_MODE=${SWANLAB_MODE:-online}
-export SWANLAB_API_KEY SWANLAB_MODE
 OUTPUT_ROOT=${OUTPUT_ROOT:-"$ROOT/outputs/sdpo_section3"}
 RUN_ID=${RUN_ID:-sdpo_section3}
 EXPECTED_GPUS=${VERPO_EXPECTED_GPUS:-$GPUS}
@@ -95,7 +92,7 @@ STUDENT_ENABLE_THINKING=${VERPO_STUDENT_ENABLE_THINKING:-false}
 TEACHER_ENABLE_THINKING=${VERPO_TEACHER_ENABLE_THINKING:-false}
 VALIDATION_ENABLE_THINKING=${VERPO_VALIDATION_ENABLE_THINKING:-false}
 REWARD_MODE=${VERPO_REWARD_MODE:-}
-SWANLAB_PROJECT=${SWANLAB_PROJECT_NAME:-qwen3-sdpo-section3-verpo}
+PROJECT_NAME=${VERPO_PROJECT_NAME:-verpo}
 PAPER_BASELINE_ENABLED=${PAPER_BASELINE_ENABLED:-false}
 PAPER_BASELINE_OBJECTIVE=${PAPER_BASELINE_OBJECTIVE:-sdpo}
 PAPER_BASELINE_DIVERGENCE=${PAPER_BASELINE_DIVERGENCE:-jsd}
@@ -193,11 +190,6 @@ esac
 
 PRINT_ONLY=${QWEN3_PRINT_RESOLVED_CONFIG:-0}
 if [[ "$PRINT_ONLY" != 1 ]]; then
-if [[ -z "${SWANLAB_API_KEY:-}" ]]; then
-  echo "SWANLAB_API_KEY is required for SDPO training" >&2
-  exit 2
-fi
-
 if [[ ! -x "$PYTHON_BIN" ]]; then
   echo "SDPO bootstrap environment is missing: $PYTHON_BIN" >&2
   echo "Launch through pipeline/verl_math/run.sh so dependencies are installed automatically" >&2
@@ -258,7 +250,7 @@ if [[ "$PRINT_ONLY" != 1 ]]; then
   mkdir -p "$RUN_ROOT/provenance" "$RUN_ROOT/checkpoints" "$RUN_ROOT/rollouts" "$RUN_ROOT/validation" "$RUN_ROOT/hydra"
 fi
 REWARD_FILE="$ROOT/risk_aware_opsd/sdpo_verl_reward.py"
-LOGGER='["console","swanlab"]'
+LOGGER='["console"]'
 CHAT_TEMPLATE_ARGS=()
 if [[ "$CHAT_TEMPLATE_THINKING_CONTROL" == enable_thinking ]]; then
   CHAT_TEMPLATE_ARGS+=(
@@ -425,7 +417,7 @@ ARGS=(
   trainer.max_critic_ckpt_to_keep=null
   trainer.test_freq="$TEST_FREQ"
   trainer.logger="$LOGGER"
-  trainer.project_name="$SWANLAB_PROJECT"
+  trainer.project_name="$PROJECT_NAME"
   trainer.experiment_name="$RUN_ID"
   trainer.default_local_dir="$RUN_ROOT/checkpoints"
   +trainer.expected_validation_data_sources="[$EXPECTED_VALIDATION_DATA_SOURCE]"

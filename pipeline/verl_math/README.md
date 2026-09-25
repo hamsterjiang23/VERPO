@@ -10,7 +10,8 @@ bash pipeline/verl_math/run.sh --model qwen3_4b --finetuning full \
 `--print-config` composes semantic YAML only. `--print-command` validates the same
 engine argument path used for training. Neither starts dependency installation,
 downloads, credential checks, nor GPU allocation. Remove the print flag only on a
-prepared Linux GPU host with its SwanLab credential supplied through the environment.
+prepared Linux GPU host. Metrics use the console logger and are retained in
+`formal/train.log`; no external tracking credential is required.
 
 The active evidence source is `rollout_group`. No offline solution annotation is
 required. Public data preparation uses the pinned ten-file source manifest;

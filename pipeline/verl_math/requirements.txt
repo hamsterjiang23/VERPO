@@ -8,7 +8,6 @@ huggingface-hub>=0.34.0,<2
 modelscope>=1.29,<2
 pytest>=8.0,<10
 PyYAML>=6.0
-swanlab>=0.6,<1
 torch>=2.6
 transformers==4.57.6
 # Keep the locally validated veRL/vLLM API surface fixed.  The A800 rollout

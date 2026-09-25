@@ -381,16 +381,7 @@ VALIDATION_TOP_P=${BETA_OPSD_VAL_TOP_P:-0.95}
 VALIDATION_TOP_K=${BETA_OPSD_VAL_TOP_K:-20}
 TENSOR_MODEL_PARALLEL_SIZE=${BETA_OPSD_TENSOR_MODEL_PARALLEL_SIZE:-1}
 PROMPT_TEMPLATE_VERSION=${BETA_OPSD_PROMPT_TEMPLATE_VERSION:-$PROMPT_TEMPLATE_VERSION}
-if [[ "$HARDWARE_PROFILE" == a800_2x_80gb ]]; then
-  EXPECTED_SWANLAB_PROJECT_NAME=qwen3-1.7b-a800-t4k-dapo-five-arm
-  SWANLAB_PROJECT_NAME=${SWANLAB_PROJECT_NAME:-$EXPECTED_SWANLAB_PROJECT_NAME}
-  if [[ "$SWANLAB_PROJECT_NAME" != "$EXPECTED_SWANLAB_PROJECT_NAME" ]]; then
-    echo "A800 five-arm runs must share SwanLab project $EXPECTED_SWANLAB_PROJECT_NAME" >&2
-    exit 2
-  fi
-else
-  SWANLAB_PROJECT_NAME=${SWANLAB_PROJECT_NAME:-"qwen3-1.7b-${HARDWARE_PROFILE}-t4k-dapo-matrix"}
-fi
+PROJECT_NAME=${VERPO_PROJECT_NAME:-verpo-archive}
 TEACHER_MAX_TOKEN_LEN_PER_GPU=${TEACHER_MAX_TOKEN_LEN_PER_GPU:-12288}
 GPU_MEMORY_MIN_MIB=${GPU_MEMORY_MIN_MIB:-0}
 GPU_MEMORY_MAX_MIB=${GPU_MEMORY_MAX_MIB:-999999}
@@ -786,10 +777,6 @@ for memory in "${GPU_MEMORY_MIB[@]}"; do
 done
 nvidia-smi --query-gpu=name,uuid,driver_version,memory.total --format=csv > "$RUN_ROOT/provenance/gpus.csv"
 
-if [[ -z "${SWANLAB_API_KEY:-}" ]]; then
-  echo "SWANLAB_API_KEY is required for the formal run" >&2
-  exit 1
-fi
 if [[ "$MODELSCOPE_UPLOAD_ENABLED" == 1 && -z "${MODELSCOPE_TOKEN:-}" ]]; then
   echo "MODELSCOPE_TOKEN is required for the A800 formal run" >&2
   exit 1
@@ -1106,7 +1093,7 @@ COMMON_ARGS=(
   +algorithm.filter_groups.metric=seq_final_reward
   +algorithm.filter_groups.min_reward_range=1.0e-6
   +algorithm.filter_groups.max_num_gen_batches=4
-  trainer.project_name="$SWANLAB_PROJECT_NAME"
+  trainer.project_name="$PROJECT_NAME"
 )
 if [[ "$ACTOR_USE_DYNAMIC_BSZ" == false ]]; then
   COMMON_ARGS+=(
@@ -1232,7 +1219,7 @@ FORMAL_ARGS=(
   trainer.total_epochs="$EXPECTED_EPOCHS"
   trainer.save_freq="$FORMAL_SAVE_FREQ"
   trainer.test_freq="$FORMAL_TEST_FREQ"
-  trainer.logger='["console","swanlab"]'
+  trainer.logger='["console"]'
   trainer.experiment_name="${MODEL_ID}_verpo_zpd_${EXPERIMENT_PROTOCOL_NAME}_${VERPO_EXPERIMENT_ID}${PROFILE_RUN_SUFFIX}_formal"
   trainer.default_local_dir="$RUN_ROOT/checkpoints"
   trainer.rollout_data_dir="$RUN_ROOT/rollouts"

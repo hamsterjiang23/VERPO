@@ -30,7 +30,7 @@ config:
     validation_before_training: true
     learning_rate: 1.0e-6
     warmup_steps: 50
-    swanlab_project: qwen3-1.7b-a100_8x_rlcsd_snapshot10-t4k-dapo-matrix
+    project_name: verpo-archive
   method:
     temperature: 1.0
     vocab_mode: topk_truncated

@@ -64,7 +64,8 @@ bash pipeline/verl_math/run.sh \
 `--print-config` 只合成配置；`--print-command` 运行真实引擎参数检查并输出实际 Hydra 配置。
 两者均不下载数据或模型，不检查凭据，不分配 GPU。
 
-正式启动前，在服务器环境中配置 `SWANLAB_API_KEY`，审核 dry-run，然后移除 `--print-command`。
+正式启动前，准备兼容的 GPU 环境，审核 dry-run，然后移除 `--print-command`。
+指标输出到控制台并保存在 `formal/train.log`，无需实验跟踪平台账号。
 启动器会准备 GPU 运行环境、固定版本的数据和模型。Llama 模型可能需要 Hugging Face 访问授权。
 
 ## 论文配置

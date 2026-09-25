@@ -132,7 +132,7 @@ a800_2x_80gb:
   vllm_gpu_memory_utilization: 0.6
   save_steps: 100
   evaluation_steps: 50
-  swanlab_project: qwen3-1.7b-a800-t4k-dapo-five-arm
+  project_name: verpo-archive
   checkpoint_retention: modelscope_all_local_top1
   local_keep_best: 1
   keep_current_after_upload: false

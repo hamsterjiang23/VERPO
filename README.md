@@ -78,8 +78,9 @@ bash pipeline/verl_math/run.sh \
   --print-command
 ```
 
-For formal training, provision a compatible GPU host and `SWANLAB_API_KEY` in its
-environment, review the dry-run, then remove `--print-command`. The launcher
+For formal training, provision a compatible GPU host, review the dry-run, then
+remove `--print-command`. Metrics are printed to the console and retained in
+`formal/train.log`; no experiment-tracking account is required. The launcher
 bootstraps the GPU runtime and prepares the pinned public data/model if missing.
 Llama access may require Hugging Face model access authorization. No credentials
 belong in commands, config files or logs.

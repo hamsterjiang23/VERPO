@@ -604,9 +604,9 @@ Trainer
      ray_wait_register_center_timeout: 300
 
 - ``trainer.total_epochs``: Number of epochs in training.
-- ``trainer.project_name``: For wandb, swanlab, mlflow
-- ``trainer.experiment_name``: For wandb, swanlab, mlflow
-- ``trainer.logger``: Support console and wandb, swanlab, mlflow, tensorboard, trackio
+- ``trainer.project_name``: For wandb, mlflow
+- ``trainer.experiment_name``: For wandb, mlflow
+- ``trainer.logger``: Support console and wandb, mlflow, tensorboard, trackio
 - ``trainer.log_val_generations``: The number of logged generation during validation (default ``0``)
 - ``trainer.nnodes``: Number of nodes used in the training.
 - ``trainer.n_gpus_per_node``: Number of GPUs per node.

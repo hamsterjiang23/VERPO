@@ -261,7 +261,6 @@ def test_public_dry_run_creates_no_output(
         {
             "OUTPUT_ROOT": str(tmp_path / "output"),
             "SDPO_DATA_DIR": str(tmp_path / "data"),
-            "SWANLAB_API_KEY": "",
         }
     )
     if flag == "--print-config":
@@ -290,6 +289,13 @@ def test_public_dry_run_creates_no_output(
         check=False,
     )
     assert result.returncode == 0, result.stderr
+    if flag == "--print-command":
+        projection_text = result.stdout.split("# native_verl_projection\n", 1)[1].split(
+            "# trl_verpo_projection", 1
+        )[0]
+        projection = yaml.safe_load(projection_text)
+        assert projection["trainer"]["logger"] == ["console"]
+        assert projection["trainer"]["project_name"] == "verpo"
     assert not (tmp_path / "output").exists()
     assert not (tmp_path / "data").exists()
 
@@ -307,3 +313,33 @@ def test_changed_runtime_paths_do_not_overwrite_provenance(
     with pytest.raises(VerpoLaunchConfigError, match="data inputs changed"):
         _write_manifest(r, output, env)
     assert path.read_bytes() == before
+
+
+def test_training_dispatch_needs_no_tracking_credentials(tmp_path, monkeypatch):
+    from unittest.mock import MagicMock
+
+    from scripts import launch_verpo_verl as launcher
+
+    environment = {}
+    monkeypatch.setattr(
+        launcher, "_runtime_environment", lambda *args, **kwargs: (environment, tmp_path)
+    )
+    manifest = MagicMock()
+    dispatch = MagicMock()
+    real_run = subprocess.run
+
+    def run_or_record(command, **kwargs):
+        if kwargs.get("capture_output"):
+            return real_run(command, **kwargs)
+        return dispatch(command, **kwargs)
+
+    monkeypatch.setattr(launcher, "_write_manifest", manifest)
+    monkeypatch.setattr(launcher.subprocess, "run", run_or_record)
+    assert launcher.main([
+        "--model", "qwen3_4b", "--hardware", "a800_8x_80gb",
+        "--protocol", "sdpo_section3_biology", "--teacher", "ema_095",
+        "--arm", "fec_fkl",
+    ]) == 0
+    manifest.assert_called_once()
+    dispatch.assert_called_once()
+    assert dispatch.call_args.kwargs["env"] == {}

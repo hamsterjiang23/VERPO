@@ -23,7 +23,7 @@ def test_tracking_finish_is_idempotent_and_propagates_exit_code():
     tracking = Tracking.__new__(Tracking)
     tracking.logger = {
         "wandb": MagicMock(),
-        "swanlab": MagicMock(),
+        "file": MagicMock(),
         "tensorboard": MagicMock(),
     }
     tracking._finished = False
@@ -32,7 +32,7 @@ def test_tracking_finish_is_idempotent_and_propagates_exit_code():
     tracking.finish(exit_code=0)
 
     tracking.logger["wandb"].finish.assert_called_once_with(exit_code=1)
-    tracking.logger["swanlab"].finish.assert_called_once_with()
+    tracking.logger["file"].finish.assert_called_once_with()
     tracking.logger["tensorboard"].finish.assert_called_once_with()
 
 
@@ -40,14 +40,14 @@ def test_tracking_finish_continues_after_backend_failure():
     tracking = Tracking.__new__(Tracking)
     tracking.logger = {
         "wandb": MagicMock(),
-        "swanlab": MagicMock(),
+        "file": MagicMock(),
     }
     tracking._finished = False
     tracking.logger["wandb"].finish.side_effect = RuntimeError("flush failed")
 
     tracking.finish(exit_code=1)
 
-    tracking.logger["swanlab"].finish.assert_called_once_with()
+    tracking.logger["file"].finish.assert_called_once_with()
 
 
 def test_validation_generations_logger_logs_trackio_traces():

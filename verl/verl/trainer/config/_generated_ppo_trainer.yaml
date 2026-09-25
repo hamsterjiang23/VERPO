@@ -1,4 +1,3 @@
-# [https://swanlab.cn/@HAMSTER/qwen3-1.7b-beta-opsd-settings-a800-vllm-five-arm/runs/gg4sx1ub/chart](https://swanlab.cn/@HAMSTER/qwen3-1.7b-beta-opsd-settings-a800-vllm-five-arm/runs/gg4sx1ub/chart) 你能访问到这个的训练数据
 # This reference configration yaml is automatically generated via 'scripts/generate_trainer_config.sh'
 # in which it invokes 'python3 scripts/print_cfg.py --cfg job ' to flatten the 'verl/trainer/config/ppo_trainer.yaml' config fields into a single file.
 # Do not modify this file directly.

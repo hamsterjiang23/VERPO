@@ -64,7 +64,7 @@ Below is the result on leetcode if not specified otherwise.
 
 | Hardware   | Model                   | Method | Test score | Details                                                                                                                                                                                |
 | ---------- | ----------------------- | ------ | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| NVIDIA GPU | PRIME-RL/Eurus-2-7B-SFT | RPIME  | 36.1       | [script](https://github.com/verl-project/verl-recipe/blob/main//prime/run_prime_qwen_code.sh), [swanlab](https://swanlab.cn/@wangzefan/prime_example/runs/7f541qhspgmy8nmhdlx35/chart) |
+| NVIDIA GPU | PRIME-RL/Eurus-2-7B-SFT | RPIME  | 36.1       | [script](https://github.com/verl-project/verl-recipe/blob/main//prime/run_prime_qwen_code.sh) |
 
 ### Notes
 

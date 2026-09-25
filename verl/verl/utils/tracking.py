@@ -36,7 +36,7 @@ class Tracking:
     """A unified tracking interface for logging experiment data to multiple backends.
 
     This class provides a centralized way to log experiment metrics, parameters, and artifacts
-    to various tracking backends including WandB, MLflow, SwanLab, TensorBoard, and console.
+    to various tracking backends including WandB, MLflow, TensorBoard, and console.
 
     Attributes:
         supported_backend: List of supported tracking backends.
@@ -46,7 +46,6 @@ class Tracking:
     supported_backend = [
         "wandb",
         "mlflow",
-        "swanlab",
         "vemlp_wandb",
         "tensorboard",
         "console",
@@ -123,28 +122,6 @@ class Tracking:
                         time.sleep(MLFLOW_SLEEP_SECONDS)
                     else:
                         logger.warning("All MLflow initialization attempts failed. Proceeding without MLflow tracking.")
-
-        if "swanlab" in default_backend:
-            import os
-
-            import swanlab
-
-            SWANLAB_API_KEY = os.environ.get("SWANLAB_API_KEY", None)
-            SWANLAB_LOG_DIR = os.environ.get("SWANLAB_LOG_DIR", "swanlog")
-            SWANLAB_MODE = os.environ.get("SWANLAB_MODE", "cloud")
-            if SWANLAB_API_KEY and SWANLAB_MODE not in {"offline", "local", "disabled"}:
-                swanlab.login(SWANLAB_API_KEY)  # NOTE: previous login information will be overwritten
-
-            if config is None:
-                config = {}  # make sure config is not None, otherwise **config will raise error
-            swanlab.init(
-                project=project_name,
-                experiment_name=experiment_name,
-                config={"FRAMEWORK": "verl", **config},
-                logdir=SWANLAB_LOG_DIR,
-                mode=SWANLAB_MODE,
-            )
-            self.logger["swanlab"] = swanlab
 
         if "vemlp_wandb" in default_backend:
             import os
@@ -412,8 +389,6 @@ class ValidationGenerationsLogger:
     def log(self, loggers, samples, step):
         if "wandb" in loggers:
             self.log_generations_to_wandb(samples, step)
-        if "swanlab" in loggers:
-            self.log_generations_to_swanlab(samples, step)
         if "mlflow" in loggers:
             self.log_generations_to_mlflow(samples, step)
         if "trackio" in loggers:
@@ -465,21 +440,6 @@ class ValidationGenerationsLogger:
         if wandb.run is not None:
             wandb.log({"val/generations": new_table}, step=step)
         self.validation_table = new_table
-
-    def log_generations_to_swanlab(self, samples, step):
-        """Log samples to swanlab as text"""
-        import swanlab
-
-        swanlab_table = swanlab.echarts.Table()
-
-        # Create column names
-        headers = ["step", "input", "output", "score"]
-
-        swanlab_row_list = [[step, *sample] for sample in samples]
-        swanlab_table.add(headers=headers, rows=swanlab_row_list)
-
-        # Log to swanlab
-        swanlab.log({"val/generations": swanlab_table}, step=step)
 
     def log_generations_to_mlflow(self, samples, step):
         """Log validation generation to mlflow as artifacts"""

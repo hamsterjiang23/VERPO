@@ -87,8 +87,10 @@ After assets are prepared, runtime identity records effective data paths and
 SHA256 values, model path/revision and model-config SHA256. Changed identities
 cannot resume an existing checkpoint directory.
 
-Before training, provision `SWANLAB_API_KEY` through the host environment, review
-the dry-run, then remove `--print-command`. Never invoke the engine script directly.
+Before training, provision a compatible GPU host, review the dry-run, then remove
+`--print-command`. Metrics use the console logger and are retained in
+`formal/train.log`; no external tracking credential is required. Never invoke the
+engine script directly.
 No paper profile is a resource estimate or a claim that it fits every GPU runtime.
 
 ## Scores and selection

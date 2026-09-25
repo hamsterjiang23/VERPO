@@ -73,7 +73,7 @@ config:
     scheduler: constant
     grad_clip: 1.0
     ppo_epochs: 1
-    swanlab_project: verpo-zpd
+    project_name: verpo
   method:
     evidence_source: rollout_group
     objective: verpo

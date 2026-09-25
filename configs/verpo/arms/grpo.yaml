@@ -8,7 +8,7 @@ config:
     prompt_template_version: srpo_v1
   protocol:
     learning_rate: 5.0e-6
-    swanlab_project: qwen3-sdpo-section3-paper-baselines
+    project_name: verpo-baselines
   method:
     objective: pure_grpo
     actor_loss_mode: ppo

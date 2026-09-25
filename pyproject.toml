@@ -18,11 +18,11 @@ cpu = [
 ]
 dev = ["pytest>=8", "ruff>=0.9", "basedpyright>=1.28"]
 gpu = [
+  "orjson>=3.10",
   "torch>=2.6",
   "transformers==4.57.6",
   "accelerate>=1.13",
   "datasets>=2.18,<4.0",
-  "swanlab>=0.5",
 ]
 
 [tool.setuptools.packages.find]

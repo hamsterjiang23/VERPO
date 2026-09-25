@@ -333,10 +333,6 @@ def main(argv: list[str] | None = None) -> int:
             matrix_id=args.matrix,
             cell_id=cell_id,
         )
-        if not environment.get("SWANLAB_API_KEY"):
-            raise VerpoLaunchConfigError(
-                "SWANLAB_API_KEY is required for formal SDPO training"
-            )
         native_verl_projection(resolved, environment)  # fail before writing outputs
         _write_manifest(resolved, output_root, environment)
         subprocess.run(command, cwd=ROOT, env=environment, check=True)

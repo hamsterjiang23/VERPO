@@ -637,7 +637,7 @@ def beta_engine_environment(resolved: ResolvedVerpoLaunch) -> dict[str, str]:
         {
             "QWEN3_TRAINING_OBJECTIVE": objective,
             "VERPO_EXPERIMENT_ID": config["identity"]["arm"],
-            "SWANLAB_PROJECT_NAME": config["protocol"]["swanlab_project"],
+            "VERPO_PROJECT_NAME": config["protocol"]["project_name"],
             "PAPER_BASELINE_ENABLED": objective in {"sdpo", "srpo"},
             "PAPER_BASELINE_OBJECTIVE": objective
             if objective in {"sdpo", "srpo"}

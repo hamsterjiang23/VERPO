@@ -23,7 +23,7 @@ def _make_lifecycle_trainer(loop: MagicMock) -> _LifecycleTrainer:
         trainer=SimpleNamespace(
             project_name="project",
             experiment_name="experiment",
-            logger=["swanlab"],
+            logger=["console"],
         )
     )
     trainer._fit = loop

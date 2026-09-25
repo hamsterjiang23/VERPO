@@ -30,6 +30,7 @@ install_requires = [
     "dill",
     "hydra-core",
     "numpy>=2.0.0",
+    "orjson>=3.10",
     "pandas",
     "peft",
     "pyarrow>=19.0.0",

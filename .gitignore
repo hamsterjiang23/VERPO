@@ -19,4 +19,4 @@ evidence/
 *.pt
 *.pth
 wandb/
-swanlog/
+*log/
